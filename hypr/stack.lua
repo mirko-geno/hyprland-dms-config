@@ -1,8 +1,8 @@
 -- "stack" layout: dwindle-like tiling plus an equal-size stack along the monitor's long side.
 --
 -- A workspace is a list of cells laid out along the long side of the monitor (rows on
--- portrait monitors, columns on landscape ones), all the same size. Each cell is a
--- dwindle-like binary tree:
+-- portrait monitors, columns on landscape ones), the same size unless resized. Each cell
+-- is a dwindle-like binary tree:
 -- - Normal windows (Super+T, Super+Space, anything else) split the focused window in half,
 --   side by side if it is wider than tall, top/bottom otherwise, like dwindle.
 -- - Windows opened with the stack binds (Super+Alt+T, Super+Alt+Space) get a new cell at
@@ -11,17 +11,24 @@
 --   turned into cells of their own first, so they count as stack entries too.
 -- - When a window closes, its cell (or its half of a split) is given back and the cells
 --   are re-split equally.
+-- - Resizing (layout messages, see the binds at the end): "resize dx dy" moves the borders
+--   of the focused window by pixels (Super+right drag), "grow s" grows/shrinks it by a
+--   fraction (Super+= / Super+-), "equalize" goes back to equal sizes (Super+Shift+R).
+--   Hyprland's own resize requests don't reach Lua layouts.
 -- State lives in Lua, so a config reload re-tiles existing windows as normal splits.
 
 local M = {
     pending_stack = false, -- the next new window opens as a new cell
-    workspaces = {},       -- workspace id -> { cells = { node, ... }, last = window id }
+    -- workspace id -> { cells = { node, ... }, weights = { number, ... } | nil (equal),
+    --                   last = window id, area = box, landscape = bool }
+    workspaces = {},
     focus = {},            -- recently focused window ids, most recent first
 }
 
--- Tree nodes: { id = "<window id>" } for a window, { a = node, b = node, side_by_side = bool }
--- for a split. Like dwindle with preserve_split, the direction is chosen when the split is
--- made (from the shape of the window being split) and kept afterwards.
+-- Tree nodes: { id = "<window id>" } for a window, { a = node, b = node, side_by_side = bool,
+-- ratio = share of `a` (nil = 0.5) } for a split. Like dwindle with preserve_split, the
+-- direction is chosen when the split is made (from the shape of the window being split)
+-- and kept afterwards. Splits also remember their last box (_box) to turn pixels into ratios.
 
 local function target_id(target)
     local w = target.window
@@ -67,6 +74,20 @@ end
 local function find_leaf(node, id)
     if node.id then return node.id == id and node or nil end
     return find_leaf(node.a, id) or find_leaf(node.b, id)
+end
+
+-- Split nodes from the cell root down to the leaf `id` (excluded); nil if it isn't there
+local function ancestors(node, id, path)
+    path = path or {}
+    if node.id then return node.id == id and path or nil end
+    table.insert(path, node)
+    local found = ancestors(node.a, id, path) or ancestors(node.b, id, path)
+    if not found then table.remove(path) end
+    return found
+end
+
+local function clamp(v, lo, hi)
+    return math.max(lo, math.min(hi, v))
 end
 
 local function focus_rank(id)
@@ -124,6 +145,82 @@ local function in_workspace(st, id)
         if contains(cell, id) then return true end
     end
     return false
+end
+
+-- Cell weights, created equal on the first resize
+local function weights(st)
+    if not st.weights then
+        st.weights = {}
+        for i = 1, #st.cells do st.weights[i] = 1 end
+    end
+    return st.weights
+end
+
+local function sum(list)
+    local total = 0
+    for _, v in ipairs(list) do total = total + v end
+    return total
+end
+
+-- Moves one border of the window `id` by `delta` pixels, on one axis: the nearest split in
+-- that direction inside its cell, else the border between its cell and the next one (the
+-- previous one for the last cell). Borders follow the cursor, whichever side it is on.
+local function resize_axis(st, id, delta, side_by_side)
+    for ci, cell in ipairs(st.cells) do
+        local path = ancestors(cell, id)
+        if path then
+            for k = #path, 1, -1 do
+                local node = path[k]
+                if node.side_by_side == side_by_side and node._box then
+                    local size = side_by_side and node._box.w or node._box.h
+                    node.ratio = clamp((node.ratio or 0.5) + delta / size, 0.1, 0.9)
+                    return
+                end
+            end
+            -- Cells only lie along the monitor's long side
+            if side_by_side ~= st.landscape or #st.cells < 2 then return end
+            local w = weights(st)
+            local total = sum(w)
+            local j = ci < #st.cells and ci or ci - 1
+            local min = 0.1 * total
+            local d = clamp(delta / (st.landscape and st.area.w or st.area.h) * total,
+                min - w[j], w[j + 1] - min)
+            w[j], w[j + 1] = w[j] + d, w[j + 1] - d
+            return
+        end
+    end
+end
+
+-- Grows (s > 0) or shrinks the window `id` by the fraction s of its split, or of the
+-- monitor when the window is a whole cell (the other cells give or take in proportion)
+local function grow(st, id, s)
+    for ci, cell in ipairs(st.cells) do
+        local path = ancestors(cell, id)
+        if path then
+            local node = path[#path]
+            if node then
+                local in_a = contains(node.a, id)
+                node.ratio = clamp((node.ratio or 0.5) + (in_a and s or -s), 0.1, 0.9)
+            elseif #st.cells > 1 then
+                local w = weights(st)
+                local total = sum(w)
+                local new = clamp(w[ci] + s * total, 0.1 * total, 0.9 * total)
+                local factor = (total - new) / (total - w[ci])
+                for k in ipairs(w) do
+                    if k ~= ci then w[k] = w[k] * factor end
+                end
+                w[ci] = new
+            end
+            return
+        end
+    end
+end
+
+local function reset_ratios(node)
+    if node.id then return end
+    node.ratio = nil
+    reset_ratios(node.a)
+    reset_ratios(node.b)
 end
 
 -- Splits whose direction matches the stack (side by side on landscape, top/bottom on
@@ -185,8 +282,23 @@ local function place_node(ctx, node, box, targets)
         return
     end
     local side_by_side = node.side_by_side
-    place_node(ctx, node.a, ctx:split(box, side_by_side and "left" or "top", 0.5), targets)
-    place_node(ctx, node.b, ctx:split(box, side_by_side and "right" or "bottom", 0.5), targets)
+    local ratio = node.ratio or 0.5
+    node._box = box
+    place_node(ctx, node.a, ctx:split(box, side_by_side and "left" or "top", ratio), targets)
+    place_node(ctx, node.b, ctx:split(box, side_by_side and "right" or "bottom", 1 - ratio), targets)
+end
+
+-- Box of cell i: equal cells, or sized by the weights after a resize
+local function cell_box(ctx, st, i, landscape)
+    local n = #st.cells
+    if not st.weights then return landscape and ctx:column(i, n) or ctx:row(i, n) end
+    local total, before = sum(st.weights), 0
+    for k = 1, i - 1 do before = before + st.weights[k] end
+    local a = ctx.area
+    if landscape then
+        return { x = a.x + a.w * before / total, y = a.y, w = a.w * st.weights[i] / total, h = a.h }
+    end
+    return { x = a.x, y = a.y + a.h * before / total, w = a.w, h = a.h * st.weights[i] / total }
 end
 
 local function active_id(ctx)
@@ -225,16 +337,19 @@ hl.layout.register("stack", {
             if not in_workspace(st, id) then add_window(st, id, targets, landscape) end
         end
 
-        -- Equal cells along the long side, then each cell's tree inside it
-        local n = #st.cells
+        -- A cell added or removed (stacking, closing) goes back to equal cells
+        if st.weights and #st.weights ~= #st.cells then st.weights = nil end
+        st.area = { x = ctx.area.x, y = ctx.area.y, w = ctx.area.w, h = ctx.area.h }
+        st.landscape = landscape
+
+        -- Cells along the long side, then each cell's tree inside it
         for i, cell in ipairs(st.cells) do
-            local box = landscape and ctx:column(i, n) or ctx:row(i, n)
-            place_node(ctx, cell, box, targets)
+            place_node(ctx, cell, cell_box(ctx, st, i, landscape), targets)
         end
     end,
 
     layout_msg = function(ctx, msg)
-        local command, arg = msg:match("^(%S+)%s*(%S*)")
+        local command, arg, arg2 = msg:match("^(%S+)%s*(%S*)%s*(%S*)")
         local id = active_id(ctx)
         local st = state_for(workspace_of(ctx))
         local parent
@@ -260,8 +375,23 @@ hl.layout.register("stack", {
                 lb = lb or find_leaf(cell, other)
             end
             if la and lb then la.id, lb.id = lb.id, la.id end
+        elseif command == "resize" then
+            -- Move the focused window's borders by dx dy pixels (Super+right drag)
+            local dx, dy = tonumber(arg), tonumber(arg2)
+            if not (id and dx and dy) then return "stack: expected resize <dx> <dy>" end
+            if dx ~= 0 then resize_axis(st, id, dx, true) end
+            if dy ~= 0 then resize_axis(st, id, dy, false) end
+        elseif command == "grow" then
+            -- Grow (positive) or shrink (negative) the focused window by a fraction
+            local s = tonumber(arg)
+            if not (id and s) then return "stack: expected grow <fraction>" end
+            grow(st, id, s)
+        elseif command == "equalize" then
+            -- Back to equal sizes on this workspace
+            st.weights = nil
+            for _, cell in ipairs(st.cells) do reset_ratios(cell) end
         else
-            return "stack: expected togglesplit, swapsplit or move l/r/u/d"
+            return "stack: expected togglesplit, swapsplit, move l/r/u/d, resize, grow or equalize"
         end
         return true
     end,
@@ -294,3 +424,66 @@ for key, dir in pairs({ ["CTRL + 1"] = "l", ["CTRL + 2"] = "r", ["CTRL + 3"] = "
     hl.bind("SUPER + " .. key, hl.dsp.layout("move " .. dir))
 end
 for _, key in ipairs({ "H", "J", "K", "L" }) do hl.unbind("SUPER + SHIFT + " .. key) end
+
+-- Keyboard resizing (replaces the DMS stock Super+- / Super+=, which the layout ignores)
+hl.unbind("SUPER + minus")
+hl.unbind("SUPER + equal")
+hl.bind("SUPER + minus", hl.dsp.layout("grow -0.05"), { repeating = true })
+hl.bind("SUPER + equal", hl.dsp.layout("grow 0.05"), { repeating = true })
+hl.bind("SUPER + SHIFT + R", hl.dsp.layout("equalize"))
+
+-- Super+right drag on a tiled window: while the button is held, a timer sends the cursor
+-- movement to the layout. Floating windows keep the DMS stock resize bind on the same keys.
+local drag = { last = nil, timer = nil }
+
+local function drag_tick()
+    local c = hl.get_cursor_pos()
+    if not (c and drag.last) then return end
+    local dx, dy = c.x - drag.last.x, c.y - drag.last.y
+    if dx ~= 0 or dy ~= 0 then
+        hl.dispatch(hl.dsp.layout(string.format("resize %.1f %.1f", dx, dy)))
+        drag.last = c
+    end
+end
+
+local function xy(v)
+    return v.x or v[1], v.y or v[2]
+end
+
+local function tiled_window_at_cursor()
+    local c, m = hl.get_cursor_pos(), hl.get_monitor_at_cursor()
+    local ws = m and m.active_workspace
+    if not (c and ws) then return nil end
+    for _, w in ipairs(hl.get_workspace_windows(ws)) do
+        if not w.floating and w.visible then
+            local x, y = xy(w.at)
+            local width, height = xy(w.size)
+            if c.x >= x and c.x < x + width and c.y >= y and c.y < y + height then return w end
+        end
+    end
+end
+
+local function stop_drag()
+    if drag.timer then drag.timer:set_enabled(false) end
+    drag.last = nil
+end
+
+hl.bind("SUPER + mouse:273", function()
+    local w = tiled_window_at_cursor()
+    if not w then return end
+    -- The layout resizes the focused window
+    local address = tostring(w.address)
+    if not address:match("^0x") then address = "0x" .. address end
+    hl.dispatch(hl.dsp.focus({ window = "address:" .. address }))
+    drag.last = hl.get_cursor_pos()
+    -- Created on first use: creating a timer while the config loads crashes
+    -- `Hyprland --verify-config` (used by restore.sh)
+    if drag.timer then
+        drag.timer:set_enabled(true)
+    else
+        drag.timer = hl.timer(drag_tick, { timeout = 16, type = "repeat" })
+    end
+end)
+hl.bind("SUPER + mouse:273", stop_drag, { release = true })
+-- Also when Super was let go first
+hl.bind("mouse:273", stop_drag, { release = true, ignore_mods = true, non_consuming = true })

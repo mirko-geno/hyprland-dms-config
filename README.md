@@ -157,6 +157,9 @@ landscape monitors, rows on portrait ones. Each cell is tiled like dwindle.
 | `Super + Alt + Space` | Same, for the app picked in Spotlight (the next window that opens) |
 | `Super + Ctrl + 1 / 2 / 3 / 4` (or `Super + Shift + arrows`) | Swaps the focused window with its neighbor left / right / up / down (left-handed, like niri; the stock `Super + Shift + H J K L` are removed) |
 | `Super + R` | Toggles the focused window's split between side by side and top/bottom |
+| `Super + right drag` (on a tiled window) | Resizes: moves the window's borders with the cursor |
+| `Super + =` / `Super + -` | Grows / shrinks the focused window (hold to repeat) |
+| `Super + Shift + R` | Back to equal sizes on the workspace |
 | `Super + 1 / 2 / 3 / 4` (or `Super + arrows`) | Focus left / right / up / down (generic Hyprland, set in `binds-user.lua`) |
 
 - Closing (or floating, or moving away) a window gives its space back: its split partner
@@ -167,11 +170,18 @@ landscape monitors, rows on portrait ones. Each cell is tiled like dwindle.
   33/33/33 (not 25/25/50). Splits in the other direction stay as one cell: a normal
   window with two side-by-side windows below it, then `Super + Alt + T` → three equal
   rows, the middle one shared by the two side-by-side windows.
+- Resizing: Hyprland's resize requests (mouse resize, `window.resize`) don't reach Lua
+  layouts either, so the layout takes messages: `resize <dx> <dy>` (pixels), `grow <fraction>`
+  and `equalize`. `Super + right drag` is emulated: the bind finds the tiled window under the
+  cursor, focuses it and starts a 16 ms timer that sends the cursor movement as `resize`
+  until the button is released. The border that moves is the nearest one in each direction
+  (inside the cell first, then between cells). Floating windows keep the DMS stock resize
+  bind. Stacking or closing a cell goes back to equal cells; split ratios stay.
+- The drag timer is created on first use: creating an `hl.timer` while the config loads
+  crashes `Hyprland --verify-config`, which `restore.sh` runs.
 - Generic `window.move` / `window.swap` don't reach Lua layouts, so moving goes through the
   layout message `move l|r|u|d` (`hl.dsp.layout("move l")`). Ties between equally close
   windows go to the most aligned one, then the most recently focused.
-- Not supported (yet): resizing (all splits are 50/50 and cells are equal), the stock
-  `Super + [` / `Super + ]` preselect binds.
 - The layout state lives in Lua: a config reload (e.g. saving any file in `~/.config/hypr`)
   re-tiles the existing windows as normal splits.
 - If `Super + Alt + Space` is used and Spotlight is closed without opening anything, the
