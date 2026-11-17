@@ -8,7 +8,7 @@ to be adapted for left-handed use like my niri setup
 
 ```
 backup.sh           # saves the current system config into this folder
-restore.sh          # installs Hyprland if missing and puts the config from this folder back
+restore.sh          # installs what is missing (Hyprland, DMS, ...) and puts the config back
 hypr/
 ├── hyprland.lua    # main Hyprland config (Lua, Hyprland 0.57+)
 ├── stack.lua       # custom "stack" layout + its binds (Super+Alt+T / Super+Alt+Space)
@@ -25,6 +25,7 @@ cursor/
 ├── Hacked-Red/     # ~/.icons/Hacked-Red: the cursor theme
 ├── index.theme     # ~/.icons/default/index.theme: fallback cursor theme
 └── 90-cursor.conf  # ~/.config/environment.d: XCURSOR_THEME and XCURSOR_SIZE
+icons/              # ~/.icons: Sweet-Red icon theme (set in DMS) + candy-icons (its base)
 ssh-agent/
 └── 90-ssh-agent.conf # ~/.config/environment.d: SSH_AUTH_SOCK for gcr-ssh-agent
 claude/
@@ -48,7 +49,7 @@ dms restart
   Only `*.lua` files are copied from `~/.config/hypr` (leftovers like `hyprland.lua.orig`
   are skipped).
 - `restore.sh`:
-  1. Installs Hyprland if it is missing (see below).
+  1. Installs the missing packages (see [Fresh install](#fresh-install)).
   2. Checks that the saved config is valid with `Hyprland --verify-config`
      (this also checks the files in `hypr/dms/`).
   3. Backs up your current system config to `~/.config-backups/<date>/`.
@@ -56,28 +57,51 @@ dms restart
 - Hyprland reloads its config on save (or `hyprctl reload`); DMS needs `dms restart`.
 - Only the wallpaper in use is saved, not the whole `~/.wallpapers` folder. On restore,
   it is copied to its original path if it is missing.
-- DMS itself is not installed by `restore.sh` (it comes from the `avengemedia/dms` COPR).
 
 > **Shared with niri:** `dms/`, `alacritty/`, `fish/`, `cursor/`, `ssh-agent/` and the
 > wallpaper are the same files the niri repo saves, since both sessions use them.
 > Restoring one repo overwrites them with that repo's version.
 
-## Installing Hyprland
+## Fresh install
 
-Hyprland is not in the Fedora/Nobara repos. `restore.sh` installs it from the
-[`lionheartp/Hyprland`](https://copr.fedorainfracloud.org/coprs/lionheartp/Hyprland/) COPR
-(the one recommended by the Hyprland wiki), only if `Hyprland` is not installed yet:
+On a fresh **Fedora Workstation** (it already has GDM), log in to GNOME, clone the repo and run:
 
 ```sh
-sudo dnf copr enable lionheartp/Hyprland
-# The COPR also ships quickshell and matugen; keep the versions DMS depends on
-sudo dnf config-manager setopt "copr:copr.fedorainfracloud.org:lionheartp:Hyprland.excludepkgs=quickshell,matugen"
-# Without weak deps (nwg-panel, wofi, kitty...): DMS already provides bar, launcher, etc.
-sudo dnf install --setopt=install_weak_deps=False hyprland xdg-desktop-portal-hyprland
+git clone git@github.com:mirko-geno/hyprland-dms-config.git ~/hyprland-dms-config
+cd ~/hyprland-dms-config
+./restore.sh   # asks for sudo (packages) and your password (chsh to fish)
 ```
 
-The session is picked in GDM (gear icon at the bottom right → Hyprland). niri stays
-installed as another session.
+Then log out and pick **Hyprland** in GDM (gear icon at the bottom right).
+
+`restore.sh` installs only the packages that are missing, so on a system that is already
+set up it does not ask for sudo:
+
+| Source | Packages |
+|---|---|
+| [`avengemedia/dms`](https://copr.fedorainfracloud.org/coprs/avengemedia/dms/) COPR (+ its dependency repo `avengemedia/danklinux`) | `dms` (pulls `dms-cli`, `quickshell`), `danksearch`, `matugen`, `dgop` |
+| [`lionheartp/Hyprland`](https://copr.fedorainfracloud.org/coprs/lionheartp/Hyprland/) COPR (recommended by the Hyprland wiki) | `hyprland`, `xdg-desktop-portal-hyprland` |
+| Fedora | `alacritty`, `fish`, `zoxide`, `gcr`, `gnome-keyring`, `breeze-icon-theme`, `xdg-desktop-portal-gtk` (and `dnf5-plugins` for `dnf copr`) |
+
+- DMS packages are installed with weak deps (DMS recommends `cava`, `qt6ct`,
+  `qt6-qtmultimedia`...). Hyprland is installed without them: they would pull `nwg-panel`,
+  `wofi` and `kitty`, which DMS already covers.
+- The Hyprland COPR also ships `quickshell` and `matugen`; they are excluded from it
+  (`excludepkgs`) so the versions DMS depends on are kept.
+- DMS runs as the `dms.service` systemd user service; `restore.sh` adds it to
+  `hyprland-session.target` (what `dms setup` does), so it starts with the Hyprland session.
+- Run it from a graphical session (it uses `systemctl --user`).
+
+Manual equivalent of the package part:
+
+```sh
+sudo dnf copr enable avengemedia/dms
+sudo dnf copr enable lionheartp/Hyprland
+sudo dnf config-manager setopt "copr:copr.fedorainfracloud.org:lionheartp:Hyprland.excludepkgs=quickshell,matugen"
+sudo dnf install dms danksearch matugen dgop alacritty fish zoxide gcr gnome-keyring breeze-icon-theme xdg-desktop-portal-gtk
+sudo dnf install --setopt=install_weak_deps=False hyprland xdg-desktop-portal-hyprland
+systemctl --user add-wants hyprland-session.target dms.service
+```
 
 ## How DMS is started
 

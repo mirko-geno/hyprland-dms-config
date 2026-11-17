@@ -42,6 +42,11 @@ cp "$HOME/.icons/default/index.theme" "$REPO/cursor/"
 cp "$CFG/environment.d/90-cursor.conf" "$REPO/cursor/"
 cp -a "$HOME/.icons/Hacked-Red" "$REPO/cursor/"
 
+# Icon themes: Sweet-Red (set in DMS) and candy-icons, which it inherits from
+rm -rf "$REPO/icons"
+mkdir -p "$REPO/icons"
+for t in Sweet-Red candy-icons; do cp -a "$HOME/.icons/$t" "$REPO/icons/"; done
+
 # SSH agent (gcr-ssh-agent from GNOME): session variable
 rm -rf "$REPO/ssh-agent"
 mkdir -p "$REPO/ssh-agent"

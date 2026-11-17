@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Restores the config saved in this folder (Hyprland, DMS, Alacritty).
+# Sets up Hyprland + DMS from this folder, also on a fresh Fedora install: installs the missing
+# packages (DMS, Hyprland, Alacritty, fish...), then restores the saved config.
 # Before overwriting anything, it backs up the current config to ~/.config-backups/<date>.
 set -euo pipefail
 
@@ -9,18 +10,35 @@ STATE="${XDG_STATE_HOME:-$HOME/.local/state}"
 BACKUP="$HOME/.config-backups/$(date +%Y%m%d-%H%M%S)"
 # Claude Code keeps sessions per directory, named after its path with non-alphanumerics as "-"
 CLAUDE_PROJECT="${CLAUDE_CONFIG_DIR:-$HOME/.claude}/projects/$(printf '%s' "$REPO" | sed 's/[^a-zA-Z0-9]/-/g')"
-# Hyprland COPR recommended by the Hyprland wiki for Fedora
+# COPRs: DMS (enabling it also enables its dependency repo avengemedia/danklinux, which
+# ships quickshell, matugen, dgop, danksearch...) and Hyprland (the one recommended by the
+# Hyprland wiki for Fedora)
+DMS_COPR="avengemedia/dms"
 HYPR_COPR="lionheartp/Hyprland"
 HYPR_REPO_ID="copr:copr.fedorainfracloud.org:lionheartp:Hyprland"
+# Installed with weak deps (DMS recommends cava, qt6ct, qt6-qtmultimedia...).
+# breeze-icon-theme: breeze-dark is one of the fallbacks of the Sweet-Red icon theme.
+PACKAGES=(dms danksearch matugen dgop alacritty fish zoxide gcr gnome-keyring
+    breeze-icon-theme xdg-desktop-portal-gtk)
+# Installed without weak deps: they pull a bar, a launcher and kitty, which DMS already covers
+HYPR_PACKAGES=(hyprland xdg-desktop-portal-hyprland)
 
-# Hyprland: install it if missing. The COPR also ships quickshell and matugen, which would
-# replace the versions DMS depends on, so they are excluded from it.
-if ! command -v Hyprland >/dev/null; then
-    echo "Installing Hyprland from the $HYPR_COPR COPR (needs sudo)"
+# Packages: only the missing ones, so on an already set up system nothing is asked
+missing() { for p in "$@"; do rpm -q "$p" >/dev/null 2>&1 || echo "$p"; done; }
+mapfile -t need < <(missing "${PACKAGES[@]}")
+mapfile -t need_hypr < <(missing "${HYPR_PACKAGES[@]}")
+if (( ${#need[@]} + ${#need_hypr[@]} )); then
+    echo "Installing ${need[*]} ${need_hypr[*]} (needs sudo)"
+    # dnf copr and dnf config-manager come from dnf5-plugins
+    rpm -q dnf5-plugins >/dev/null || sudo dnf install -y dnf5-plugins
+    sudo dnf copr enable -y "$DMS_COPR"
     sudo dnf copr enable -y "$HYPR_COPR"
+    # The Hyprland COPR also ships quickshell and matugen; keep the versions DMS depends on
     sudo dnf config-manager setopt "$HYPR_REPO_ID.excludepkgs=quickshell,matugen"
-    # No weak deps: they pull a bar, a launcher and kitty, which DMS already covers
-    sudo dnf install -y --setopt=install_weak_deps=False hyprland xdg-desktop-portal-hyprland
+    if (( ${#need[@]} )); then sudo dnf install -y "${need[@]}"; fi
+    if (( ${#need_hypr[@]} )); then
+        sudo dnf install -y --setopt=install_weak_deps=False "${need_hypr[@]}"
+    fi
 fi
 
 # Validate the Hyprland config before touching anything
@@ -40,6 +58,10 @@ mkdir -p "$BACKUP/cursor"
 [[ -f "$HOME/.icons/default/index.theme" ]] && cp "$HOME/.icons/default/index.theme" "$BACKUP/cursor/"
 [[ -f "$CFG/environment.d/90-cursor.conf" ]] && cp "$CFG/environment.d/90-cursor.conf" "$BACKUP/cursor/"
 [[ -d "$HOME/.icons/Hacked-Red" ]] && cp -a "$HOME/.icons/Hacked-Red" "$BACKUP/cursor/"
+for t in "$REPO/icons/"*/; do
+    t="$(basename "$t")"
+    [[ -d "$HOME/.icons/$t" ]] && mkdir -p "$BACKUP/icons" && cp -a "$HOME/.icons/$t" "$BACKUP/icons/"
+done
 [[ -f "$CFG/environment.d/90-ssh-agent.conf" ]] && cp "$CFG/environment.d/90-ssh-agent.conf" "$BACKUP/"
 [[ -d "$CLAUDE_PROJECT" ]] && mkdir -p "$BACKUP/claude" && cp -r "$CLAUDE_PROJECT/." "$BACKUP/claude/"
 
@@ -49,22 +71,18 @@ cp "$REPO/hypr/"*.lua "$CFG/hypr/"
 cp "$REPO/hypr/dms/"*.lua "$CFG/hypr/dms/"
 [[ -d "$REPO/hypr/scripts" ]] && cp -r "$REPO/hypr/scripts" "$CFG/hypr/"
 
-# DMS
+# DMS: config, session state, and started with the Hyprland session (dms.service is a
+# systemd user service; `dms setup` normally adds this link)
 mkdir -p "$CFG/dms" "$STATE/dms"
 cp -r "$REPO/dms/config/." "$CFG/dms/"
 cp "$REPO/dms/state/session.json" "$STATE/dms/"
+systemctl --user add-wants hyprland-session.target dms.service
 
 # Alacritty
 mkdir -p "$CFG/alacritty"
 cp "$REPO/alacritty/"*.toml "$CFG/alacritty/"
 
-# fish: install it (and zoxide, used by config.fish) if missing, copy the config, make it the default shell
-missing=()
-for p in fish zoxide; do command -v "$p" >/dev/null || missing+=("$p"); done
-if (( ${#missing[@]} )); then
-    echo "Installing ${missing[*]} (needs sudo)"
-    sudo dnf install -y "${missing[@]}"
-fi
+# fish (installed above, with zoxide used by config.fish): copy the config, make it the default shell
 mkdir -p "$CFG/fish"
 cp -r "$REPO/fish/." "$CFG/fish/"
 fish_path="$(command -v fish)"
@@ -79,6 +97,12 @@ cp "$REPO/cursor/index.theme" "$HOME/.icons/default/"
 cp "$REPO/cursor/90-cursor.conf" "$CFG/environment.d/"
 rm -rf "$HOME/.icons/Hacked-Red"
 cp -a "$REPO/cursor/Hacked-Red" "$HOME/.icons/"
+
+# Icon themes (Sweet-Red, set in DMS, and candy-icons, which it inherits from)
+for t in "$REPO/icons/"*/; do
+    rm -rf "$HOME/.icons/$(basename "$t")"
+    cp -a "$t" "$HOME/.icons/"
+done
 
 # SSH agent (needs the gcr and gnome-keyring packages)
 cp "$REPO/ssh-agent/90-ssh-agent.conf" "$CFG/environment.d/"

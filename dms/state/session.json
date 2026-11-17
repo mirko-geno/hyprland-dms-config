@@ -86,7 +86,9 @@
     "niri": {}
   },
   "lastAppliedIconTheme": "Sweet-Red",
+  "launcherLastQuery": "vis",
   "launcherQueryHistory": [
+    "vis",
     "spot",
     "fas",
     "zap",
@@ -135,8 +137,7 @@
     "filrs",
     "ca",
     "vek",
-    "only",
-    "ves"
+    "only"
   ],
   "niriOverviewLastMode": "all",
   "configVersion": 7
