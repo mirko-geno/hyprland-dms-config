@@ -7,7 +7,8 @@
 --   side by side if it is wider than tall, top/bottom otherwise, like dwindle.
 -- - Windows opened with the stack binds (Super+Alt+T, Super+Alt+Space) get a new cell at
 --   the end, so they span the whole width (or height) and every cell is resized equally:
---   100% -> 50/50 -> 33/33/33...
+--   100% -> 50/50 -> 33/33/33... Normal windows already split in the stack direction are
+--   turned into cells of their own first, so they count as stack entries too.
 -- - When a window closes, its cell (or its half of a split) is given back and the cells
 --   are re-split equally.
 -- State lives in Lua, so a config reload re-tiles existing windows as normal splits.
@@ -125,10 +126,27 @@ local function in_workspace(st, id)
     return false
 end
 
-local function add_window(st, id, targets)
+-- Splits whose direction matches the stack (side by side on landscape, top/bottom on
+-- portrait) are broken into separate cells, recursively; other splits stay as one cell
+local function flatten(node, side_by_side, out)
+    if not node.id and node.side_by_side == side_by_side then
+        flatten(node.a, side_by_side, out)
+        flatten(node.b, side_by_side, out)
+    else
+        table.insert(out, node)
+    end
+    return out
+end
+
+local function add_window(st, id, targets, landscape)
     if M.pending_stack then
         M.pending_stack = false
-        table.insert(st.cells, { id = id })
+        -- Normal windows stacked in the same direction become cells of their own, so
+        -- e.g. two top/bottom windows + a stacked one give 33/33/33, not 25/25/50
+        local cells = {}
+        for _, cell in ipairs(st.cells) do flatten(cell, landscape, cells) end
+        table.insert(cells, { id = id })
+        st.cells = cells
     else
         -- Split the most recently focused window of this workspace (or the last one placed)
         local focused
@@ -201,15 +219,16 @@ hl.layout.register("stack", {
         end
         st.cells = cells
 
+        local landscape = ctx.area.w >= ctx.area.h
         for _, target in ipairs(ctx.targets) do
             local id = target_id(target)
-            if not in_workspace(st, id) then add_window(st, id, targets) end
+            if not in_workspace(st, id) then add_window(st, id, targets, landscape) end
         end
 
         -- Equal cells along the long side, then each cell's tree inside it
         local n = #st.cells
         for i, cell in ipairs(st.cells) do
-            local box = ctx.area.w >= ctx.area.h and ctx:column(i, n) or ctx:row(i, n)
+            local box = landscape and ctx:column(i, n) or ctx:row(i, n)
             place_node(ctx, cell, box, targets)
         end
     end,

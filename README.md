@@ -108,8 +108,12 @@ landscape monitors, rows on portrait ones. Each cell is tiled like dwindle.
 
 - Closing (or floating, or moving away) a window gives its space back: its split partner
   takes the whole space, an empty cell disappears and the cells are re-split equally.
-- Example on the portrait monitor: two normal windows, then `Super + Alt + T` twice →
-  the two normal windows share the top third, and each stacked terminal gets a third.
+- When stacking, normal windows already split in the stack direction (top/bottom on
+  portrait, side by side on landscape) become cells of their own first. Example on the
+  portrait monitor: two normal windows one above the other, then `Super + Alt + T` →
+  33/33/33 (not 25/25/50). Splits in the other direction stay as one cell: a normal
+  window with two side-by-side windows below it, then `Super + Alt + T` → three equal
+  rows, the middle one shared by the two side-by-side windows.
 - Generic `window.move` / `window.swap` don't reach Lua layouts, so moving goes through the
   layout message `move l|r|u|d` (`hl.dsp.layout("move l")`). Ties between equally close
   windows go to the most aligned one, then the most recently focused.
