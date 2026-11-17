@@ -93,3 +93,6 @@ require("dms.windowrules")
 -- Custom "stack" layout (dwindle-like + equal stack with Super+Alt+T / Super+Alt+Space).
 -- Loaded last so its binds replace the DMS stock ones.
 require("stack")
+
+-- Workspaces 1-4 on the landscape monitor, 5-8 on the portrait one (Super+F1..F8)
+require("workspaces")
