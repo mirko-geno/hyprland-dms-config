@@ -86,8 +86,10 @@
     "niri": {}
   },
   "lastAppliedIconTheme": "Sweet-Red",
-  "launcherLastQuery": "vis",
+  "launcherLastQuery": "disks",
   "launcherQueryHistory": [
+    "disks",
+    "boxes",
     "vis",
     "spot",
     "fas",
@@ -135,9 +137,7 @@
     "steam",
     "missi",
     "filrs",
-    "ca",
-    "vek",
-    "only"
+    "ca"
   ],
   "niriOverviewLastMode": "all",
   "configVersion": 7

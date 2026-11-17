@@ -64,24 +64,35 @@ dms restart
 
 ## Fresh install
 
-On a fresh **Fedora Workstation** (it already has GDM), log in to GNOME, clone the repo and run:
+Works on a fresh **Fedora Workstation** or a **minimal Fedora install** (e.g. the
+"Minimal Install" of the Everything netinstaller, which boots to a text console).
 
 ```sh
-git clone git@github.com:mirko-geno/hyprland-dms-config.git ~/hyprland-dms-config
+sudo dnf install git     # a minimal install has no git
+git clone https://github.com/mirko-geno/hyprland-dms-config.git ~/hyprland-dms-config
 cd ~/hyprland-dms-config
-./restore.sh   # asks for sudo (packages) and your password (chsh to fish)
+./restore.sh   # asks for sudo (packages, login screen) and your password (chsh to fish)
 ```
 
-Then log out and pick **Hyprland** in GDM (gear icon at the bottom right).
+The repo is private: cloning over HTTPS asks for a GitHub username and a personal access
+token (or set up an SSH key first and use the `git@github.com:` URL).
 
-`restore.sh` installs only the packages that are missing, so on a system that is already
+- **Workstation:** log out and pick **Hyprland** in GDM (gear icon at the bottom right).
+  GDM is kept; the DMS greeter is not installed.
+- **Minimal install:** reboot. There was no display manager, so `restore.sh` sets up greetd
+  with the DMS greeter (themed like the desktop) and makes the system boot to the
+  graphical target.
+
+`restore.sh` installs only the packages that are missing (checked by what they provide, so
+replacements like `mesa-vulkan-drivers-freeworld` count), so on a system that is already
 set up it does not ask for sudo:
 
 | Source | Packages |
 |---|---|
-| [`avengemedia/dms`](https://copr.fedorainfracloud.org/coprs/avengemedia/dms/) COPR (+ its dependency repo `avengemedia/danklinux`) | `dms` (pulls `dms-cli`, `quickshell`), `danksearch`, `matugen`, `dgop` |
+| [`avengemedia/dms`](https://copr.fedorainfracloud.org/coprs/avengemedia/dms/) COPR (+ its dependency repo `avengemedia/danklinux`) | `dms` (pulls `dms-cli`, `quickshell`), `danksearch`, `matugen`, `dgop`; `dms-greeter` (login screen, minimal install only) |
 | [`lionheartp/Hyprland`](https://copr.fedorainfracloud.org/coprs/lionheartp/Hyprland/) COPR (recommended by the Hyprland wiki) | `hyprland`, `xdg-desktop-portal-hyprland` |
 | Fedora | `alacritty`, `fish`, `zoxide`, `gcr`, `gnome-keyring`, `breeze-icon-theme`, `xdg-desktop-portal-gtk` (and `dnf5-plugins` for `dnf copr`) |
+| Fedora: desktop basics a minimal install lacks | graphics `mesa-dri-drivers`, `mesa-vulkan-drivers`; audio `pipewire`, `pipewire-pulseaudio`, `wireplumber`; battery/power `upower`, `power-profiles-daemon`; `NetworkManager-wifi`, `bluez`; `polkit`, `xdg-utils`, `xdg-user-dirs`; fonts `google-noto-sans-vf-fonts`, `google-noto-sans-mono-vf-fonts`, `google-noto-color-emoji-fonts`, `fira-code-fonts` (DMS monospace font); `greetd` (minimal install only) |
 
 - DMS packages are installed with weak deps (DMS recommends `cava`, `qt6ct`,
   `qt6-qtmultimedia`...). Hyprland is installed without them: they would pull `nwg-panel`,
@@ -90,9 +101,18 @@ set up it does not ask for sudo:
   (`excludepkgs`) so the versions DMS depends on are kept.
 - DMS runs as the `dms.service` systemd user service; `restore.sh` adds it to
   `hyprland-session.target` (what `dms setup` does), so it starts with the Hyprland session.
-- Run it from a graphical session (it uses `systemctl --user`).
+- Bluetooth (`bluetooth.service`) is enabled if it isn't.
+- Login screen (only when `/etc/systemd/system/display-manager.service` does not exist):
+  `restore.sh` writes `/etc/greetd/config.toml` (user `greeter`, command
+  `/usr/bin/dms-greeter --command hyprland`), enables `greetd.service`, sets
+  `graphical.target` as default and runs `dms-greeter sync` to copy the DMS theme and
+  wallpaper to it. Fedora's `/etc/pam.d/greetd` already unlocks gnome-keyring at login.
+- NVIDIA GPUs need the proprietary driver from RPM Fusion, which is not handled here
+  (Intel/AMD work with Mesa).
+- Apps (browser, file manager, editor...) are not installed by `restore.sh`.
+- Untested on an actual minimal install yet: try it in a VM first.
 
-Manual equivalent of the package part:
+Manual equivalent of the package part (Workstation):
 
 ```sh
 sudo dnf copr enable avengemedia/dms

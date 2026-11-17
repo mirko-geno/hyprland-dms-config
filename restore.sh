@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
-# Sets up Hyprland + DMS from this folder, also on a fresh Fedora install: installs the missing
-# packages (DMS, Hyprland, Alacritty, fish...), then restores the saved config.
+# Sets up Hyprland + DMS from this folder, also on a fresh Fedora install (Workstation or a
+# minimal install): installs the missing packages (DMS, Hyprland, Alacritty, fish, plus the
+# desktop basics a minimal install lacks: graphics, audio, fonts, login screen...), then
+# restores the saved config.
 # Before overwriting anything, it backs up the current config to ~/.config-backups/<date>.
 set -euo pipefail
 
@@ -20,11 +22,25 @@ HYPR_REPO_ID="copr:copr.fedorainfracloud.org:lionheartp:Hyprland"
 # breeze-icon-theme: breeze-dark is one of the fallbacks of the Sweet-Red icon theme.
 PACKAGES=(dms danksearch matugen dgop alacritty fish zoxide gcr gnome-keyring
     breeze-icon-theme xdg-desktop-portal-gtk)
+# Desktop basics that Fedora Workstation has and a minimal install doesn't:
+# graphics (Intel/AMD; NVIDIA needs RPM Fusion), audio (DMS volume uses PipeWire), battery and
+# power profiles, Wi-Fi and Bluetooth, fonts (DMS uses Fira Code as monospace), xdg tools
+PACKAGES+=(mesa-dri-drivers mesa-vulkan-drivers pipewire pipewire-pulseaudio wireplumber
+    upower power-profiles-daemon NetworkManager-wifi bluez polkit xdg-utils xdg-user-dirs
+    google-noto-sans-vf-fonts google-noto-sans-mono-vf-fonts google-noto-color-emoji-fonts
+    fira-code-fonts)
+# Login screen, only when there is no display manager yet (a minimal install has none;
+# on Workstation GDM is kept): greetd with the DMS greeter
+if [[ ! -e /etc/systemd/system/display-manager.service ]]; then
+    PACKAGES+=(greetd dms-greeter)
+    SETUP_GREETER=1
+fi
 # Installed without weak deps: they pull a bar, a launcher and kitty, which DMS already covers
 HYPR_PACKAGES=(hyprland xdg-desktop-portal-hyprland)
 
-# Packages: only the missing ones, so on an already set up system nothing is asked
-missing() { for p in "$@"; do rpm -q "$p" >/dev/null 2>&1 || echo "$p"; done; }
+# Packages: only the missing ones, so on an already set up system nothing is asked.
+# Checked by capability, so replacements count (e.g. mesa-vulkan-drivers-freeworld).
+missing() { for p in "$@"; do rpm -q --whatprovides "$p" >/dev/null 2>&1 || echo "$p"; done; }
 mapfile -t need < <(missing "${PACKAGES[@]}")
 mapfile -t need_hypr < <(missing "${HYPR_PACKAGES[@]}")
 if (( ${#need[@]} + ${#need_hypr[@]} )); then
@@ -39,6 +55,29 @@ if (( ${#need[@]} + ${#need_hypr[@]} )); then
     if (( ${#need_hypr[@]} )); then
         sudo dnf install -y --setopt=install_weak_deps=False "${need_hypr[@]}"
     fi
+fi
+
+# Bluetooth is not enabled on a minimal install
+if ! systemctl is-enabled -q bluetooth.service 2>/dev/null; then
+    echo "Enabling Bluetooth (needs sudo)"
+    sudo systemctl enable bluetooth.service
+fi
+
+# Login screen (minimal install): greetd runs the DMS greeter on Hyprland, and the system
+# boots to the graphical target. greetd's Fedora PAM file already unlocks gnome-keyring.
+if [[ -n "${SETUP_GREETER:-}" ]]; then
+    echo "Setting up greetd + dms-greeter as the login screen (needs sudo)"
+    sudo tee /etc/greetd/config.toml >/dev/null <<'EOF'
+# Written by hyprland-dms-config/restore.sh: DMS greeter on Hyprland
+[terminal]
+vt = 1
+
+[default_session]
+user = "greeter"
+command = "/usr/bin/dms-greeter --command hyprland"
+EOF
+    sudo systemctl enable greetd.service
+    sudo systemctl set-default graphical.target
 fi
 
 # Validate the Hyprland config before touching anything
@@ -121,4 +160,13 @@ if [[ -n "$wp" && ! -f "$wp" && -f "$REPO/wallpaper/$(basename "$wp")" ]]; then
     cp "$REPO/wallpaper/$(basename "$wp")" "$wp"
 fi
 
+# Standard user folders (Documents, Downloads...), which a minimal install doesn't create
+xdg-user-dirs-update
+
+# Copy the DMS theme, wallpaper and settings to the login screen (after DMS config is restored)
+if [[ -n "${SETUP_GREETER:-}" ]]; then
+    dms-greeter sync || echo "dms-greeter sync failed; run it again after logging in to Hyprland"
+fi
+
 echo "Done. Hyprland reloads its config on its own (or run: hyprctl reload); for DMS: dms restart"
+if [[ -n "${SETUP_GREETER:-}" ]]; then echo "Reboot to get the DMS login screen."; fi
