@@ -285,8 +285,12 @@ end
 hl.bind("SUPER + ALT + T", stacked("alacritty"))
 hl.bind("SUPER + ALT + space", stacked("dms ipc call spotlight toggle"))
 
--- Moving windows goes through the layout (replaces the DMS stock binds for window.move)
-for key, dir in pairs({ left = "l", right = "r", up = "u", down = "d", H = "l", L = "r", K = "u", J = "d" }) do
-    hl.unbind("SUPER + SHIFT + " .. key)
-    hl.bind("SUPER + SHIFT + " .. key, hl.dsp.layout("move " .. dir))
+-- Moving windows goes through the layout (replaces the DMS stock binds for window.move):
+-- left-handed Super+Ctrl+1/2/3/4 = left/right/up/down, plus Super+Shift+arrows.
+-- The stock Super+Shift+H/J/K/L are removed (covered by the number keys).
+for key, dir in pairs({ ["CTRL + 1"] = "l", ["CTRL + 2"] = "r", ["CTRL + 3"] = "u", ["CTRL + 4"] = "d",
+    ["SHIFT + left"] = "l", ["SHIFT + right"] = "r", ["SHIFT + up"] = "u", ["SHIFT + down"] = "d" }) do
+    hl.unbind("SUPER + " .. key)
+    hl.bind("SUPER + " .. key, hl.dsp.layout("move " .. dir))
 end
+for _, key in ipairs({ "H", "J", "K", "L" }) do hl.unbind("SUPER + SHIFT + " .. key) end

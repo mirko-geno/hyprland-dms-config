@@ -90,6 +90,18 @@ the `dms.service` systemd user service, the same way the niri session does.
 - `kb_layout = "latam"` in `hyprland.lua`: unlike niri, Hyprland does not read the system
   keyboard layout (`localectl`), and an empty value falls back to `us`.
 
+## Other keybind changes
+
+In `hypr/dms/binds-user.lua` (the DMS file for user binds; the DMS keybind editor keeps
+only its `hl.bind` / `hl.unbind` lines):
+
+- `Alt + F4` closes the focused window; the stock `Super + Q` is removed.
+- `Super + V` toggles floating; the stock `Super + Shift + T` is removed. `Super + V` was
+  the DMS clipboard history, which moved to `Super + C`.
+- Left-handed focus, like the niri setup: `Super + 1 / 2 / 3 / 4` = left / right / up / down.
+  The stock `Super + H J K L` are removed; `Super + arrows` are kept.
+- `Super + 5…9` removed (workspaces are switched only with F keys, see [Workspaces](#workspaces)).
+
 ## Stack layout
 
 `hypr/stack.lua` registers a custom Lua layout (`lua:stack`), used on every workspace.
@@ -103,9 +115,9 @@ landscape monitors, rows on portrait ones. Each cell is tiled like dwindle.
 | `Super + T`, `Super + Space` (and any app opened another way) | Normal: splits the focused window in half, side by side if it is wider than tall, top/bottom otherwise (direction kept afterwards, like `preserve_split`) |
 | `Super + Alt + T` | Opens a terminal as a new cell: 100% → 50/50 → 33/33/33… |
 | `Super + Alt + Space` | Same, for the app picked in Spotlight (the next window that opens) |
-| `Super + Shift + arrows` / `H J K L` | Swaps the focused window with its neighbor in that direction |
+| `Super + Ctrl + 1 / 2 / 3 / 4` (or `Super + Shift + arrows`) | Swaps the focused window with its neighbor left / right / up / down (left-handed, like niri; the stock `Super + Shift + H J K L` are removed) |
 | `Super + R` | Toggles the focused window's split between side by side and top/bottom |
-| `Super + arrows` / `H J K L` | Focus (generic Hyprland, works as usual) |
+| `Super + 1 / 2 / 3 / 4` (or `Super + arrows`) | Focus left / right / up / down (generic Hyprland, set in `binds-user.lua`) |
 
 - Closing (or floating, or moving away) a window gives its space back: its split partner
   takes the whole space, an empty cell disappears and the cells are re-split equally.
@@ -138,9 +150,9 @@ keyboard's F-key groups (F1–F4, gap, F5–F8):
 
 - Each monitor starts on its first workspace (1 and 5).
 - Going to a workspace on the other monitor moves the focus (and the cursor) there.
-- Workspace numbers are still global in Hyprland, so the DMS stock `Super + 1…9` /
-  `Super + Shift + 1…9` binds reach the same workspaces (`Super + 5` = workspace 5 on the
-  portrait monitor).
+- The DMS stock `Super + 1…9` binds are removed (in `hypr/dms/binds-user.lua`): workspaces
+  are switched only with the F keys. `Super + Shift + 1…9` (send window) still exists;
+  numbers are global, so `Super + Shift + 5` sends to workspace 5 on the portrait monitor.
 - Workspaces are created when visited and removed when empty and not shown.
 - The monitor names are hard-coded: on another machine, update them in `workspaces.lua`.
 
