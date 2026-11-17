@@ -126,6 +126,13 @@ only its `hl.bind` / `hl.unbind` lines):
   The stock `Super + H J K L` are removed; `Super + arrows` are kept.
 - `Super + 5…9` removed (workspaces are switched only with F keys, see [Workspaces](#workspaces)).
 
+## DMS bar
+
+The main bar is shown only on the portrait monitor (`HDMI-A-1`) and, on laptops, on the
+built-in screen: `screenPreferences` of the bar in `dms/config/settings.json` also lists
+`eDP-1` and `eDP-2` (the built-in panel uses one of those names). DMS matches plain strings
+against the output name, so the entries simply don't apply where those screens don't exist.
+
 ## Stack layout
 
 `hypr/stack.lua` registers a custom Lua layout (`lua:stack`), used on every workspace.

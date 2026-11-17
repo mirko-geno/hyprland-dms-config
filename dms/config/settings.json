@@ -83,18 +83,29 @@
         {
           "name": "HDMI-A-1",
           "model": "PHILIPS"
-        }
+        },
+        "eDP-1",
+        "eDP-2"
       ],
       "showOnLastDisplay": false,
       "leftWidgets": [
         {
           "id": "launcherButton",
-          "enabled": true,
+          "enabled": false,
           "launcherLogoMode": "apps"
         },
         {
           "id": "workspaceSwitcher",
-          "enabled": false
+          "enabled": true,
+          "workspaceIndicatorStyle": "lines",
+          "workspaceIndicatorCompact": true,
+          "workspaceIndicatorRoundness": -1,
+          "showWorkspaceIndex": true,
+          "showWorkspaceName": false,
+          "showWorkspaceApps": false,
+          "showOccupiedWorkspacesOnly": false,
+          "showSpecialWorkspaces": false,
+          "workspaceFocusedBorderEnabled": false
         },
         {
           "id": "focusedWindow",
