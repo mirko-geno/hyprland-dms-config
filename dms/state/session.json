@@ -1,0 +1,144 @@
+{
+  "wallpaperPath": "/home/mirko/.wallpapers/Honda NSX Type S (18).jpg",
+  "perMonitorWallpaper": true,
+  "monitorWallpapers": {
+    "DP-1": "/home/mirko/.wallpapers/Honda NSX Type S.jpg",
+    "HDMI-A-1": "/home/mirko/.wallpapers/Honda NSX Type S (2).jpg"
+  },
+  "monitorWallpaperFillModes": {
+    "HDMI-A-1": "Scrolling"
+  },
+  "lockScreenAutoPositions": {
+    "DP-1": {
+      "width": 1920,
+      "height": 1080,
+      "positions": {
+        "lock_clock": {
+          "x": 48,
+          "y": 400
+        }
+      }
+    },
+    "HDMI-A-1": {
+      "width": 1920,
+      "height": 1080,
+      "positions": {
+        "lock_clock": {
+          "x": 48,
+          "y": 752
+        }
+      }
+    }
+  },
+  "repoMoveNoticeVersion": "v2.1.2",
+  "wallpaperPathLight": "/home/mirko/.wallpapers/Honda NSX Type S (18).jpg",
+  "wallpaperPathDark": "/home/mirko/.wallpapers/Honda NSX Type S (18).jpg",
+  "monitorCyclingSettings": {
+    "DP-1": {
+      "enabled": false,
+      "random": false,
+      "recursive": false,
+      "mode": "interval",
+      "interval": 300,
+      "time": "06:00",
+      "folderPath": ""
+    },
+    "HDMI-A-1": {
+      "enabled": false,
+      "random": false,
+      "recursive": false,
+      "mode": "interval",
+      "interval": 300,
+      "time": "06:00",
+      "folderPath": ""
+    }
+  },
+  "hiddenTrayIds": [
+    "openrgb",
+    "spotify-client",
+    "dnf-app-center-updater",
+    "zapfast",
+    "steam"
+  ],
+  "trayItemOrder": [
+    "dnf-app-center-updater",
+    "steam",
+    "zapfast",
+    "spotify-client",
+    "openrgb"
+  ],
+  "recentColors": [
+    "#ff0005"
+  ],
+  "lastPlayerIdentity": "Spotify",
+  "niriOutputSettings": {
+    "DP-1": {}
+  },
+  "hyprlandOutputSettings": {
+    "DP-1": {
+      "vrr": 0
+    }
+  },
+  "activeDisplayProfile": {
+    "niri": ""
+  },
+  "activeDisplayProfileModes": {
+    "niri": {}
+  },
+  "lastAppliedIconTheme": "Sweet-Red",
+  "launcherLastQuery": "zap",
+  "launcherQueryHistory": [
+    "zap",
+    "spo",
+    "zen",
+    "spori",
+    "soitu",
+    "files",
+    "vesk",
+    "edit",
+    "spoti",
+    "obs",
+    "pdf",
+    "z",
+    "file",
+    "veskt",
+    "fast",
+    "ze",
+    "vsc",
+    "vsco",
+    "vs",
+    "miss",
+    "spotif",
+    "tex",
+    "clocs",
+    "wha",
+    "fire",
+    "spot",
+    "z4en",
+    "text",
+    "ob",
+    "dux",
+    "clau",
+    "clad",
+    "cl",
+    "claude",
+    "f",
+    "soft",
+    "wh",
+    "clocks",
+    "VS",
+    "WHA",
+    "SPOTI",
+    "ZEN",
+    "steam",
+    "missi",
+    "filrs",
+    "ca",
+    "vek",
+    "only",
+    "ves",
+    "camer"
+  ],
+  "niriOverviewLastMode": "all",
+  "configVersion": 7
+}

@@ -1,0 +1,2 @@
+- [niri + DMS setup](niri-dms-setup.md) — left-handed keybinds, ~/niri-dms-config backup workflow, English comments
+- [Hyprland + DMS setup](hyprland-dms-setup.md) — ~/hyprland-dms-config repo, Hyprland from COPR, shared files with niri repo
