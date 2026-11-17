@@ -128,10 +128,19 @@ only its `hl.bind` / `hl.unbind` lines):
 
 ## DMS bar
 
-The main bar is shown only on the portrait monitor (`HDMI-A-1`) and, on laptops, on the
-built-in screen: `screenPreferences` of the bar in `dms/config/settings.json` also lists
-`eDP-1` and `eDP-2` (the built-in panel uses one of those names). DMS matches plain strings
-against the output name, so the entries simply don't apply where those screens don't exist.
+Two bars in `dms/config/settings.json` (`barConfigs`), each tied to screens by name:
+
+| Bar | Screens | Difference |
+|---|---|---|
+| Main Bar | the portrait monitor (`HDMI-A-1`) | no battery widget |
+| Laptop Bar | `eDP-1`, `eDP-2` (a laptop's built-in panel uses one of those names) | same widgets + battery |
+
+DMS matches plain strings against the output name, so the Laptop Bar only appears on a
+machine with a built-in screen. The battery widget lives only there because on a machine
+without a battery DMS still shows it, as a generic icon.
+
+The Laptop Bar is a copy of the Main Bar: a widget change made in DMS settings to one bar
+is not applied to the other.
 
 ## Stack layout
 
