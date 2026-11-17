@@ -89,3 +89,7 @@ require("dms.input")
 require("dms.binds")
 require("dms.binds-user")
 require("dms.windowrules")
+
+-- Custom "stack" layout (dwindle-like + equal stack with Super+Alt+T / Super+Alt+Space).
+-- Loaded last so its binds replace the DMS stock ones.
+require("stack")
