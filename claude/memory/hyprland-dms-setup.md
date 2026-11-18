@@ -11,3 +11,5 @@ restore.sh is meant for a fresh Fedora Workstation: installs missing packages (a
 
 **Why:** user wants each compositor setup reproducible on its own.
 **How to apply:** after config changes run the validator, ./backup.sh, update README; new config files go in backup.sh/restore.sh too. User commits/pushes themselves. `sudo` doesn't work through `!` in Claude Code: give the user sudo commands to run in their own terminal.
+
+Since 2026-11-17 the repo has a CLAUDE.md (rules, workflow, pitfalls); the user starts new sessions there instead of resuming the old huge one (b72d4f5c…), to save usage. Keep CLAUDE.md short and updated when a new rule or pitfall appears.

@@ -236,5 +236,9 @@ cd ~/hyprland-dms-config
 claude --resume b72d4f5c-b8ea-4bf6-810c-f3d731982a15
 ```
 
+That session is very long, so resuming it is expensive. For new work, start a new session in
+the repo folder: `CLAUDE.md` (rules, workflow, pitfalls) and the project memory give it the
+context.
+
 The session includes command outputs from this machine (paths, packages, email),
 so the repo should stay private.
