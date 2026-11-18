@@ -120,6 +120,8 @@ In `hypr/dms/binds-user.lua` (the DMS file for user binds; the DMS keybind edito
 only its `hl.bind` / `hl.unbind` lines):
 
 - `Alt + F4` closes the focused window; the stock `Super + Q` is removed.
+- `Super + Space` opens the DMS search bar (`spotlight-bar`, stock `Alt + Space`) instead of the
+  app panel (`spotlight`); `Alt + Space` does nothing.
 - `Super + V` toggles floating; the stock `Super + Shift + T` is removed. `Super + V` was
   the DMS clipboard history, which moved to `Super + C`.
 - Left-handed focus, like the niri setup: `Super + 1 / 2 / 3 / 4` = left / right / up / down.
@@ -154,7 +156,7 @@ landscape monitors, rows on portrait ones. Each cell is tiled like dwindle.
 |---|---|
 | `Super + T`, `Super + Space` (and any app opened another way) | Normal: splits the focused window in half, side by side if it is wider than tall, top/bottom otherwise (direction kept afterwards, like `preserve_split`) |
 | `Super + Alt + T` | Opens a terminal as a new cell: 100% → 50/50 → 33/33/33… |
-| `Super + Alt + Space` | Same, for the app picked in Spotlight (the next window that opens) |
+| `Super + Alt + Space` | Same, for the app picked in the DMS search bar (the next window that opens) |
 | `Super + Ctrl + 1 / 2 / 3 / 4` (or `Super + Shift + arrows`) | Swaps the focused window with its neighbor left / right / up / down (left-handed, like niri; the stock `Super + Shift + H J K L` are removed) |
 | `Super + R` | Toggles the focused window's split between side by side and top/bottom |
 | `Super + right drag` (on a tiled window) | Resizes: moves the window's borders with the cursor |
@@ -184,7 +186,7 @@ landscape monitors, rows on portrait ones. Each cell is tiled like dwindle.
   windows go to the most aligned one, then the most recently focused.
 - The layout state lives in Lua: a config reload (e.g. saving any file in `~/.config/hypr`)
   re-tiles the existing windows as normal splits.
-- If `Super + Alt + Space` is used and Spotlight is closed without opening anything, the
+- If `Super + Alt + Space` is used and the search bar is closed without opening anything, the
   next window opened later still goes to a new cell.
 
 ## Workspaces

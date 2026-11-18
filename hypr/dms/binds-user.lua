@@ -34,3 +34,9 @@ hl.bind("SUPER + V", hl.dsp.window.float({ action = "toggle" }))
 
 -- DMS clipboard history, moved from Super+V
 hl.bind("SUPER + C", hl.dsp.exec_cmd("dms ipc call clipboard toggle"))
+
+-- Super+Space opens the DMS search bar (spotlight-bar, stock Alt+Space) instead of the
+-- app panel (spotlight); Alt+Space does nothing
+hl.unbind("SUPER + space")
+hl.unbind("ALT + space")
+hl.bind("SUPER + space", hl.dsp.exec_cmd("dms ipc call spotlight-bar toggle"))

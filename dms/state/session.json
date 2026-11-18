@@ -70,7 +70,7 @@
   "recentColors": [
     "#ff0005"
   ],
-  "lastPlayerIdentity": "Mozilla zen",
+  "lastPlayerIdentity": "Spotify",
   "niriOutputSettings": {
     "DP-1": {}
   },
@@ -86,9 +86,10 @@
     "niri": {}
   },
   "lastAppliedIconTheme": "Sweet-Red",
-  "launcherLastQuery": "zen",
   "launcherQueryHistory": [
+    "z",
     "zen",
+    "flat",
     "files",
     "bo",
     "box",
@@ -106,7 +107,6 @@
     "spoti",
     "obs",
     "pdf",
-    "z",
     "file",
     "veskt",
     "fast",
@@ -136,8 +136,7 @@
     "WHA",
     "SPOTI",
     "ZEN",
-    "steam",
-    "missi"
+    "steam"
   ],
   "niriOverviewLastMode": "all",
   "configVersion": 7

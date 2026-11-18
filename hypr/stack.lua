@@ -413,7 +413,7 @@ local function stacked(cmd)
     end
 end
 hl.bind("SUPER + ALT + T", stacked("alacritty"))
-hl.bind("SUPER + ALT + space", stacked("dms ipc call spotlight toggle"))
+hl.bind("SUPER + ALT + space", stacked("dms ipc call spotlight-bar toggle"))
 
 -- Moving windows goes through the layout (replaces the DMS stock binds for window.move):
 -- left-handed Super+Ctrl+1/2/3/4 = left/right/up/down, plus Super+Shift+arrows.
