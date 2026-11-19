@@ -86,8 +86,10 @@
     "niri": {}
   },
   "lastAppliedIconTheme": "Sweet-Red",
-  "launcherLastQuery": "/OIP",
+  "launcherLastQuery": "/oip",
   "launcherQueryHistory": [
+    "/oip",
+    "calc",
     "/OIP",
     "versk",
     "files",
@@ -135,9 +137,7 @@
     "claude",
     "f",
     "soft",
-    "wh",
-    "clocks",
-    "VS"
+    "wh"
   ],
   "niriOverviewLastMode": "all",
   "configVersion": 7

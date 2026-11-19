@@ -28,6 +28,8 @@ read the relevant section instead of rediscovering it.
 
 - Saving any file in `~/.config/hypr` reloads the live config immediately, and reloading
   resets the Lua state (the stack layout re-tiles open windows).
+  Several files saved in a row can leave a half-applied reload: check with `hyprctl binds -j`
+  and run `hyprctl reload config-only` if something is missing.
 - `hypr/stack.lua` (custom Lua layout `lua:stack`): edit a copy in the scratchpad, test it
   on a headless output, verify the full config with the copy, then copy it in. Testing:
   `hyprctl output create headless NAME`, load the layout part with `hyprctl eval` under a

@@ -15,6 +15,9 @@ hl.config({
 		kb_layout = "latam",
 		numlock_by_default = true,
 		follow_mouse = 0,
+		-- Don't move focus when the cursor crosses between floating and tiled windows
+		-- (Hyprland does that by default even with follow_mouse = 0)
+		float_switch_override_focus = 0,
 		-- dms/input.lua is required later and wins per key
 		touchpad = {
 			tap_to_click = true,
@@ -96,3 +99,6 @@ require("stack")
 
 -- Workspaces 1-4 on the landscape monitor, 5-8 on the portrait one (Super+F1..F8)
 require("workspaces")
+
+-- Super+V: floating windows get a fixed size and are centered
+require("floating")

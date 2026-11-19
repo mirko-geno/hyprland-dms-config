@@ -27,10 +27,10 @@ hl.unbind("SUPER + L")
 hl.unbind("SUPER + Q")
 hl.bind("ALT + F4", hl.dsp.window.close())
 
--- Toggle floating with Super+V instead of Super+Shift+T (Super+V was the DMS clipboard)
+-- Super+V toggles floating instead of Super+Shift+T (Super+V was the DMS clipboard);
+-- the bind itself is in floating.lua (sizes and centers the window)
 hl.unbind("SUPER + SHIFT + T")
 hl.unbind("SUPER + V")
-hl.bind("SUPER + V", hl.dsp.window.float({ action = "toggle" }))
 
 -- DMS clipboard history, moved from Super+V
 hl.bind("SUPER + C", hl.dsp.exec_cmd("dms ipc call clipboard toggle"))
