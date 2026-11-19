@@ -6,7 +6,7 @@
     "HDMI-A-1": "/home/mirko/.wallpapers/Honda NSX Type S (2).jpg"
   },
   "monitorWallpaperFillModes": {
-    "HDMI-A-1": "Scrolling"
+    "HDMI-A-1": "Fill"
   },
   "lockScreenAutoPositions": {
     "DP-1": {
@@ -70,7 +70,7 @@
   "recentColors": [
     "#ff0005"
   ],
-  "lastPlayerIdentity": "Spotify",
+  "lastPlayerIdentity": "Mozilla zen",
   "niriOutputSettings": {
     "DP-1": {}
   },
@@ -86,11 +86,20 @@
     "niri": {}
   },
   "lastAppliedIconTheme": "Sweet-Red",
+  "launcherLastQuery": "/OIP",
   "launcherQueryHistory": [
-    "z",
-    "zen",
-    "flat",
+    "/OIP",
+    "versk",
     "files",
+    "zap",
+    "spotif",
+    "zen",
+    "pdf",
+    "fil",
+    "vsco",
+    "missi",
+    "z",
+    "flat",
     "bo",
     "box",
     "disks",
@@ -98,7 +107,6 @@
     "vis",
     "spot",
     "fas",
-    "zap",
     "spo",
     "spori",
     "soitu",
@@ -106,16 +114,13 @@
     "edit",
     "spoti",
     "obs",
-    "pdf",
     "file",
     "veskt",
     "fast",
     "ze",
     "vsc",
-    "vsco",
     "vs",
     "miss",
-    "spotif",
     "tex",
     "clocs",
     "wha",
@@ -132,11 +137,7 @@
     "soft",
     "wh",
     "clocks",
-    "VS",
-    "WHA",
-    "SPOTI",
-    "ZEN",
-    "steam"
+    "VS"
   ],
   "niriOverviewLastMode": "all",
   "configVersion": 7

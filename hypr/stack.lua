@@ -450,16 +450,25 @@ local function xy(v)
     return v.x or v[1], v.y or v[2]
 end
 
+local function under_cursor(w, c)
+    local x, y = xy(w.at)
+    local width, height = xy(w.size)
+    return c.x >= x and c.x < x + width and c.y >= y and c.y < y + height
+end
+
+-- The tiled window under the cursor, or nil when a floating window is on top of it (that
+-- one is resized by the stock bind) or there is none. An open special workspace covers
+-- the regular one, so its windows are the ones looked at.
 local function tiled_window_at_cursor()
     local c, m = hl.get_cursor_pos(), hl.get_monitor_at_cursor()
-    local ws = m and m.active_workspace
+    local ws = m and (m.active_special_workspace or m.active_workspace)
     if not (c and ws) then return nil end
+    -- Floating windows are drawn above tiled ones (pinned ones too, from any workspace)
+    for _, w in ipairs(hl.get_windows()) do
+        if w.floating and w.visible and under_cursor(w, c) then return nil end
+    end
     for _, w in ipairs(hl.get_workspace_windows(ws)) do
-        if not w.floating and w.visible then
-            local x, y = xy(w.at)
-            local width, height = xy(w.size)
-            if c.x >= x and c.x < x + width and c.y >= y and c.y < y + height then return w end
-        end
+        if not w.floating and w.visible and under_cursor(w, c) then return w end
     end
 end
 
