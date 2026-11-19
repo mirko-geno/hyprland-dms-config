@@ -69,6 +69,7 @@ done
 mkdir -p "$CFG/hypr/dms"
 cp "$REPO/hypr/"*.lua "$CFG/hypr/"
 cp "$REPO/hypr/dms/"*.lua "$CFG/hypr/dms/"
+cp "$REPO/hypr/xdph.conf" "$CFG/hypr/"
 [[ -d "$REPO/hypr/scripts" ]] && cp -r "$REPO/hypr/scripts" "$CFG/hypr/"
 
 # DMS: config, session state, and started with the Hyprland session (dms.service is a
