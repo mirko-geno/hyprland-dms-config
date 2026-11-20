@@ -10,8 +10,9 @@ read the relevant section instead of rediscovering it.
 - The user is left-handed: keybinds use number keys, F keys and the left side of the
   keyboard (Super+1..4 focus, Super+Ctrl+1..4 move, Super+F1..F8 workspaces).
 - Goal: pure tiling, fast keyboard window management, workspaces as "virtual monitors".
-  No scrolling/niri-style layouts. Don't suggest workspace-overview plugins again
-  (Hyprtasking was tried and removed; hyprexpo no longer exists).
+  No scrolling/niri-style layouts. Don't suggest other workspace-overview plugins
+  (Hyprtasking was tried and removed). The overview in use is the sandwichfarm hyprexpo
+  fork (`hypr/hyprexpo.lua`), built by hand: see README "Workspace overview".
 - Prefer simple solutions; no extra daemons or heavy tooling.
 - Commit/push only when asked. New folders need `git add -A`.
 - Ask before reading `~/.ssh`.
@@ -45,6 +46,8 @@ read the relevant section instead of rediscovering it.
 - Never `pkill -f`/`pgrep -f` with a pattern that also appears in your own command line.
 - `hyprctl repl 'return ...'` evaluates Lua in the running compositor (useful for checks).
 - `hyprctl binds` shows `arg` as an internal index, not the command.
+- After a Hyprland update the hyprexpo plugin must be rebuilt (`./hyprexpo.sh`, needs
+  `hyprland-devel` of the same version); until then Super+Tab falls back to the DMS overview.
 - Docker (when started) blocks VM networking via iptables FORWARD DROP.
 
 ## Repo notes

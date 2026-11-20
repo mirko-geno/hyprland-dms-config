@@ -102,3 +102,6 @@ require("workspaces")
 
 -- Super+V: floating windows get a fixed size and are centered
 require("floating")
+
+-- Workspace overview plugin (Super+Tab)
+require("hyprexpo")

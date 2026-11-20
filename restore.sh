@@ -18,15 +18,21 @@ HYPR_COPR="lionheartp/Hyprland"
 HYPR_REPO_ID="copr:copr.fedorainfracloud.org:lionheartp:Hyprland"
 # Installed with weak deps (DMS recommends cava, qt6ct, qt6-qtmultimedia...).
 # breeze-icon-theme: breeze-dark is one of the fallbacks of the Sweet-Red icon theme.
+# lua-devel, make: to build the hyprexpo plugin (hyprexpo.sh).
 PACKAGES=(dms danksearch matugen dgop alacritty fish zoxide gcr gnome-keyring
-    breeze-icon-theme xdg-desktop-portal-gtk)
-# Installed without weak deps: they pull a bar, a launcher and kitty, which DMS already covers
-HYPR_PACKAGES=(hyprland xdg-desktop-portal-hyprland)
+    breeze-icon-theme xdg-desktop-portal-gtk lua-devel make)
+# Installed without weak deps: they pull a bar, a launcher and kitty, which DMS already covers.
+# hyprland-devel: Hyprland headers (and compiler) to build the hyprexpo plugin.
+HYPR_PACKAGES=(hyprland xdg-desktop-portal-hyprland hyprland-devel)
 
 # Packages: only the missing ones, so on an already set up system nothing is asked
 missing() { for p in "$@"; do rpm -q "$p" >/dev/null 2>&1 || echo "$p"; done; }
 mapfile -t need < <(missing "${PACKAGES[@]}")
 mapfile -t need_hypr < <(missing "${HYPR_PACKAGES[@]}")
+# hyprland-devel must be the same version as an already installed hyprland
+if rpm -q hyprland >/dev/null 2>&1; then
+    need_hypr=("${need_hypr[@]/#hyprland-devel/hyprland-devel-$(rpm -q --qf '%{version}-%{release}' hyprland)}")
+fi
 if (( ${#need[@]} + ${#need_hypr[@]} )); then
     echo "Installing ${need[*]} ${need_hypr[*]} (needs sudo)"
     # dnf copr and dnf config-manager come from dnf5-plugins
@@ -71,6 +77,8 @@ cp "$REPO/hypr/"*.lua "$CFG/hypr/"
 cp "$REPO/hypr/dms/"*.lua "$CFG/hypr/dms/"
 cp "$REPO/hypr/xdph.conf" "$CFG/hypr/"
 [[ -d "$REPO/hypr/scripts" ]] && cp -r "$REPO/hypr/scripts" "$CFG/hypr/"
+# Workspace overview plugin (Super+Tab); without it Super+Tab is the DMS overview
+"$REPO/hyprexpo.sh" || echo "hyprexpo was not built: Super+Tab stays the DMS overview" >&2
 
 # DMS: config, session state, and started with the Hyprland session (dms.service is a
 # systemd user service; `dms setup` normally adds this link)
