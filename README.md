@@ -94,6 +94,10 @@ set up it does not ask for sudo:
   (`excludepkgs`) so the versions DMS depends on are kept.
 - DMS runs as the `dms.service` systemd user service; `restore.sh` adds it to
   `hyprland-session.target` (what `dms setup` does), so it starts with the Hyprland session.
+- DMS file search (typing `/name` in the launcher) asks the `dsearch` daemon (`danksearch`
+  package), which indexes the home folder. Its user service ships disabled, so `restore.sh`
+  enables `dsearch.service`; without it the search returns nothing. The first index takes a
+  while after login.
 - Run it from a graphical session (it uses `systemctl --user`).
 
 Manual equivalent of the package part:
@@ -105,6 +109,7 @@ sudo dnf config-manager setopt "copr:copr.fedorainfracloud.org:lionheartp:Hyprla
 sudo dnf install dms danksearch matugen dgop alacritty fish zoxide gcr gnome-keyring breeze-icon-theme xdg-desktop-portal-gtk lua-devel make
 sudo dnf install --setopt=install_weak_deps=False hyprland xdg-desktop-portal-hyprland hyprland-devel
 systemctl --user add-wants hyprland-session.target dms.service
+systemctl --user enable --now dsearch.service
 ./hyprexpo.sh
 ```
 

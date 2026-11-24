@@ -81,11 +81,13 @@ cp "$REPO/hypr/xdph.conf" "$CFG/hypr/"
 "$REPO/hyprexpo.sh" || echo "hyprexpo was not built: Super+Tab stays the DMS overview" >&2
 
 # DMS: config, session state, and started with the Hyprland session (dms.service is a
-# systemd user service; `dms setup` normally adds this link)
+# systemd user service; `dms setup` normally adds this link). dsearch.service (from
+# danksearch) is the file index behind the "/" file search in DMS; its preset is disabled.
 mkdir -p "$CFG/dms" "$STATE/dms"
 cp -r "$REPO/dms/config/." "$CFG/dms/"
 cp "$REPO/dms/state/session.json" "$STATE/dms/"
 systemctl --user add-wants hyprland-session.target dms.service
+systemctl --user enable dsearch.service
 
 # Alacritty
 mkdir -p "$CFG/alacritty"
