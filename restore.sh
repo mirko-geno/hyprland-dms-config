@@ -87,7 +87,7 @@ mkdir -p "$CFG/dms" "$STATE/dms"
 cp -r "$REPO/dms/config/." "$CFG/dms/"
 cp "$REPO/dms/state/session.json" "$STATE/dms/"
 systemctl --user add-wants hyprland-session.target dms.service
-systemctl --user enable dsearch.service
+systemctl --user enable --now dsearch.service
 
 # Alacritty
 mkdir -p "$CFG/alacritty"

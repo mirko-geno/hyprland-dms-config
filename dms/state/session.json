@@ -30,8 +30,6 @@
       }
     }
   },
-  "doNotDisturb": true,
-  "doNotDisturbHeldByScreenShare": true,
   "repoMoveNoticeVersion": "v2.1.2",
   "wallpaperPathLight": "/home/mirko/.wallpapers/Honda NSX Type S (18).jpg",
   "wallpaperPathDark": "/home/mirko/.wallpapers/Honda NSX Type S (18).jpg",
@@ -72,7 +70,7 @@
   "recentColors": [
     "#ff0005"
   ],
-  "lastPlayerIdentity": "Mozilla zen",
+  "lastPlayerIdentity": "Spotify",
   "niriOutputSettings": {
     "DP-1": {}
   },
@@ -88,24 +86,30 @@
     "niri": {}
   },
   "lastAppliedIconTheme": "Sweet-Red",
-  "launcherLastQuery": "files",
   "launcherQueryHistory": [
+    "/OIP",
     "files",
+    "spoi",
+    "zap",
     "zen",
+    "obs",
+    "/images",
+    "spoti",
+    "ve",
+    "/Grupos y módulos",
+    "spori",
+    "mixer",
+    "steam",
     "vscod",
     "vsk",
     "in",
-    "steam",
     "setam",
     "spot",
     "/oip grupos",
-    "obs",
     "veskt",
     "/oip",
     "calc",
-    "/OIP",
     "versk",
-    "zap",
     "spotif",
     "pdf",
     "fil",
@@ -120,11 +124,9 @@
     "vis",
     "fas",
     "spo",
-    "spori",
     "soitu",
     "vesk",
     "edit",
-    "spoti",
     "file",
     "fast",
     "ze",
@@ -134,12 +136,7 @@
     "tex",
     "clocs",
     "wha",
-    "fire",
-    "z4en",
-    "text",
-    "ob",
-    "dux",
-    "clau"
+    "fire"
   ],
   "niriOverviewLastMode": "all",
   "configVersion": 7
