@@ -49,8 +49,8 @@ PACKAGES+=(flatpak gnome-software code)
 # Desktop basics that Fedora Workstation has and a minimal install doesn't:
 # graphics (Intel/AMD; NVIDIA needs RPM Fusion), audio (DMS volume uses PipeWire), battery and
 # power profiles, Wi-Fi and Bluetooth, fonts (DMS uses Fira Code as monospace), xdg tools,
-# python3 (reads session.json below) and git (hyprexpo.sh clones the plugin)
-PACKAGES+=(python3 git-core mesa-dri-drivers mesa-vulkan-drivers
+# python3 (reads session.json below), git (hyprexpo.sh clones the plugin), libva-utils (vainfo)
+PACKAGES+=(python3 git-core libva-utils mesa-dri-drivers mesa-vulkan-drivers
     pipewire pipewire-pulseaudio wireplumber
     upower power-profiles-daemon NetworkManager-wifi bluez polkit xdg-utils xdg-user-dirs
     google-noto-sans-vf-fonts google-noto-sans-mono-vf-fonts google-noto-color-emoji-fonts
@@ -113,6 +113,35 @@ if (( ${#need_codecs[@]} )); then
         sudo dnf config-manager setopt fedora-cisco-openh264.enabled=1
     fi
     sudo dnf install -y --skip-unavailable "${need_codecs[@]}"
+fi
+
+# Hardware video decoding (H.264/H.265...): Fedora's Mesa and Intel drivers leave out the
+# patented codecs, so these come from RPM Fusion (free for AMD's Mesa driver, nonfree for
+# Intel's). Without them video still plays, decoded on the CPU (more battery). The GPU vendor
+# comes from sysfs (lspci is not on a minimal install): 0x1002 AMD, 0x8086 Intel.
+gpus="$(cat /sys/class/drm/card*/device/vendor 2>/dev/null | sort -u)"
+hwdec=()
+grep -qx 0x1002 <<<"$gpus" && ! rpm -q mesa-va-drivers-freeworld >/dev/null 2>&1 && hwdec+=(amd)
+grep -qx 0x8086 <<<"$gpus" && ! rpm -q intel-media-driver >/dev/null 2>&1 && hwdec+=(intel)
+if (( ${#hwdec[@]} )); then
+    echo "Setting up hardware video decoding (${hwdec[*]}) from RPM Fusion (needs sudo)"
+    if ! has_repo rpmfusion-free || ! has_repo rpmfusion-nonfree; then
+        fedora="$(rpm -E %fedora)"
+        sudo dnf install -y \
+            "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$fedora.noarch.rpm" \
+            "https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$fedora.noarch.rpm"
+    fi
+    if [[ " ${hwdec[*]} " == *" amd "* ]]; then
+        if rpm -q mesa-va-drivers >/dev/null 2>&1; then
+            sudo dnf swap -y mesa-va-drivers mesa-va-drivers-freeworld
+        else
+            sudo dnf install -y mesa-va-drivers-freeworld
+        fi
+    fi
+    if [[ " ${hwdec[*]} " == *" intel "* ]]; then
+        # Replaces Fedora's libva-intel-media-driver if installed
+        sudo dnf install -y --allowerasing intel-media-driver
+    fi
 fi
 
 # Flathub, for Flatpak apps (from GNOME Software or `flatpak install flathub <app>`)
