@@ -61,6 +61,12 @@ if [[ -d "$CLAUDE_PROJECT" ]]; then
     [[ -d "$CLAUDE_PROJECT/memory" ]] && cp -r "$CLAUDE_PROJECT/memory" "$REPO/claude/"
 fi
 
+# Claude Code settings (only settings.json: never .credentials.json, which holds the login)
+if [[ -f "$HOME/.claude/settings.json" ]]; then
+    mkdir -p "$REPO/claude-code"
+    cp "$HOME/.claude/settings.json" "$REPO/claude-code/"
+fi
+
 # Profile picture (AccountsService; DMS and the DMS greeter show it)
 icon="$(busctl get-property org.freedesktop.Accounts "/org/freedesktop/Accounts/User$(id -u)" \
     org.freedesktop.Accounts.User IconFile 2>/dev/null | sed -n 's/^s "\(.*\)"$/\1/p')"

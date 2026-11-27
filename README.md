@@ -37,6 +37,8 @@ claude/
 └── memory/         # Claude Code memory for this project
 wallpaper/          # the wallpapers in use (general, light/dark and per monitor)
 profile/avatar      # profile picture (AccountsService), shown by DMS and the DMS greeter
+claude-code/
+└── settings.json   # ~/.claude/settings.json: Claude Code settings (never the login)
 ```
 
 ## Backup and restore
@@ -111,6 +113,7 @@ set up it does not ask for sudo:
 | [`duxlabs/dux-repo`](https://copr.fedorainfracloud.org/coprs/duxlabs/dux-repo/) COPR | `dux-edit` (text editor, `dedit`), `dux-calendar` (calendar, `dcal`; its reminders need it running: "Start at login" in its settings or `systemctl --user enable --now dcal`) |
 | Flathub | Zen Browser (`app.zen_browser.zen`, system-wide), set as the default browser with `xdg-mime` |
 | [RPM Fusion](https://rpmfusion.org) free and nonfree (only if the GPU is AMD or Intel) | Hardware video decoding with the patented codecs Fedora leaves out: `mesa-va-drivers-freeworld` (AMD, swapped for Fedora's `mesa-va-drivers`), `intel-media-driver` (Intel, replaces Fedora's `libva-intel-media-driver`). The GPU vendor is read from `/sys/class/drm/card*/device/vendor`; check it with `vainfo` |
+| [Anthropic's repo](https://downloads.claude.ai/claude-code/rpm/stable) (`/etc/yum.repos.d/claude-code.repo`, set up by `restore.sh` with its signing key) | `claude-code` (Claude Code, `/usr/bin/claude`, updated with dnf). Log in the first time you run `claude`; the login (`~/.claude/.credentials.json`) is never saved in the repo |
 | Fedora: desktop basics a minimal install lacks | graphics `mesa-dri-drivers`, `mesa-vulkan-drivers`; audio `pipewire`, `pipewire-pulseaudio`, `wireplumber`; battery `upower`; power profiles: `tuned-ppd` (Fedora's default) unless something already provides `ppd-service` (e.g. Nobara's `power-profiles-daemon`; the two conflict); `NetworkManager-wifi`, `bluez`; `polkit`, `xdg-utils`, `xdg-user-dirs`; `python3`, `git-core` (used by `restore.sh` and `hyprexpo.sh`), `libva-utils` (`vainfo`), `dconf` (stores gsettings, e.g. the icon theme); fonts `google-noto-sans-vf-fonts`, `google-noto-sans-mono-vf-fonts`, `google-noto-color-emoji-fonts`, `fira-code-fonts` (DMS monospace font); `greetd` (login screen) |
 
 - DMS comes from the Dux Labs COPRs. The older `avengemedia/dms` and `avengemedia/danklinux`

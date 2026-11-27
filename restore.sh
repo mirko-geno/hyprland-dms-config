@@ -50,6 +50,9 @@ CODECS=(gstreamer1-plugins-good gstreamer1-plugins-bad-free gstreamer1-plugins-u
 # plugin is built in; it talks to dnf through dnf5daemon, started on demand over D-Bus).
 # code: VS Code from Microsoft's repo (set up below, before installing)
 PACKAGES+=(flatpak gnome-software code)
+# claude-code: Claude Code (claude) from Anthropic's repo (set up below, before installing);
+# in /usr/bin, so fish finds it, and updated with dnf. Log in the first time you run claude.
+PACKAGES+=(claude-code)
 # Desktop basics that Fedora Workstation has and a minimal install doesn't:
 # graphics (Intel/AMD; NVIDIA needs RPM Fusion), audio (DMS volume uses PipeWire), battery,
 # Wi-Fi and Bluetooth, fonts (DMS uses Fira Code as monospace), xdg tools,
@@ -104,6 +107,14 @@ if (( ${#need[@]} + ${#need_hypr[@]} )); then
     # hyprland-devel needs (from the Hyprland COPR); this adds to terra's own exclude list
     if has_repo terra; then
         sudo dnf config-manager setopt "terra.excludepkgs=glaze-devel"
+    fi
+    # Claude Code: Anthropic's repo and signing key
+    if [[ ! -f /etc/yum.repos.d/claude-code.repo ]]; then
+        sudo rpm --import https://downloads.claude.ai/keys/claude-code.asc
+        printf '%s\n' "[claude-code]" "name=Claude Code" \
+            "baseurl=https://downloads.claude.ai/claude-code/rpm/stable" "enabled=1" \
+            "gpgcheck=1" "gpgkey=https://downloads.claude.ai/keys/claude-code.asc" |
+            sudo tee /etc/yum.repos.d/claude-code.repo >/dev/null
     fi
     # VS Code: Microsoft's repo and signing key (the official instructions)
     if [[ ! -f /etc/yum.repos.d/vscode.repo ]]; then
@@ -196,6 +207,7 @@ for t in "$REPO/icons/"*/; do
 done
 [[ -f "$CFG/environment.d/90-ssh-agent.conf" ]] && cp "$CFG/environment.d/90-ssh-agent.conf" "$BACKUP/"
 [[ -d "$CLAUDE_PROJECT" ]] && mkdir -p "$BACKUP/claude" && cp -r "$CLAUDE_PROJECT/." "$BACKUP/claude/"
+[[ -f "$HOME/.claude/settings.json" ]] && mkdir -p "$BACKUP/claude-code" && cp "$HOME/.claude/settings.json" "$BACKUP/claude-code/"
 
 # Hyprland
 mkdir -p "$CFG/hypr/dms"
@@ -251,6 +263,13 @@ done
 # SSH agent (needs the gcr and gnome-keyring packages)
 cp "$REPO/ssh-agent/90-ssh-agent.conf" "$CFG/environment.d/"
 systemctl --user enable gcr-ssh-agent.socket 2>/dev/null || echo "Could not enable gcr-ssh-agent.socket (is gcr installed?)"
+
+# Claude Code settings (model, effort, theme, plugins; never the login, which stays in
+# ~/.claude/.credentials.json and is not in the repo)
+if [[ -f "$REPO/claude-code/settings.json" ]]; then
+    mkdir -p "$HOME/.claude"
+    cp "$REPO/claude-code/settings.json" "$HOME/.claude/"
+fi
 
 # Claude Code sessions and memory (resume with: claude --resume <session id>)
 if [[ -d "$REPO/claude" ]]; then
