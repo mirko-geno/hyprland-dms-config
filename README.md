@@ -83,10 +83,14 @@ set up it does not ask for sudo:
 
 | Source | Packages |
 |---|---|
-| [`avengemedia/dms`](https://copr.fedorainfracloud.org/coprs/avengemedia/dms/) COPR (+ its dependency repo `avengemedia/danklinux`) | `dms` (pulls `dms-cli`, `quickshell`), `danksearch`, `matugen`, `dgop` |
+| [`duxlabs/dms`](https://copr.fedorainfracloud.org/coprs/duxlabs/dms/) COPR | `dms` (pulls `dms-cli`, `quickshell`) |
+| [`duxlabs/dux-repo`](https://copr.fedorainfracloud.org/coprs/duxlabs/dux-repo/) COPR | `dux-search` (`dsearch`), `matugen`, `dux-gop` (`dgop`) |
 | [`lionheartp/Hyprland`](https://copr.fedorainfracloud.org/coprs/lionheartp/Hyprland/) COPR (recommended by the Hyprland wiki) | `hyprland`, `xdg-desktop-portal-hyprland`, `hyprland-guiutils`, `hyprland-devel` (to build hyprexpo; same version as an installed `hyprland`) |
 | Fedora | `alacritty`, `fish`, `zoxide`, `gcr`, `gnome-keyring`, `breeze-icon-theme`, `xdg-desktop-portal-gtk`, `lua-devel` and `make` (hyprexpo) (and `dnf5-plugins` for `dnf copr`) |
 
+- DMS comes from the Dux Labs COPRs. The older `avengemedia/dms` and `avengemedia/danklinux`
+  COPRs are deprecated; `dms migrate dux` moves an existing install (only the repos change:
+  commands, services and config stay the same, packages are renamed on the next upgrade).
 - DMS packages are installed with weak deps (DMS recommends `cava`, `qt6ct`,
   `qt6-qtmultimedia`...). Hyprland is installed without them: they would pull `nwg-panel`,
   `wofi` and `kitty`, which DMS already covers.
@@ -99,7 +103,7 @@ set up it does not ask for sudo:
   (`excludepkgs`) so the versions DMS depends on are kept.
 - DMS runs as the `dms.service` systemd user service; `restore.sh` adds it to
   `hyprland-session.target` (what `dms setup` does), so it starts with the Hyprland session.
-- DMS file search (typing `/name` in the launcher) asks the `dsearch` daemon (`danksearch`
+- DMS file search (typing `/name` in the launcher) asks the `dsearch` daemon (`dux-search`
   package), which indexes the home folder. Its user service ships disabled, so `restore.sh`
   enables `dsearch.service`; without it the search returns nothing. The first index takes a
   while after login.
@@ -108,11 +112,12 @@ set up it does not ask for sudo:
 Manual equivalent of the package part:
 
 ```sh
-sudo dnf copr enable avengemedia/dms
+sudo dnf copr enable duxlabs/dms
+sudo dnf copr enable duxlabs/dux-repo
 sudo dnf copr enable lionheartp/Hyprland
 sudo dnf config-manager setopt "copr:copr.fedorainfracloud.org:lionheartp:Hyprland.excludepkgs=quickshell,matugen"
 sudo dnf config-manager setopt terra.excludepkgs=glaze-devel   # Nobara only (see Workspace overview)
-sudo dnf install dms danksearch matugen dgop alacritty fish zoxide gcr gnome-keyring breeze-icon-theme xdg-desktop-portal-gtk lua-devel make
+sudo dnf install dms dux-search matugen dux-gop alacritty fish zoxide gcr gnome-keyring breeze-icon-theme xdg-desktop-portal-gtk lua-devel make
 sudo dnf install --setopt=install_weak_deps=False hyprland xdg-desktop-portal-hyprland hyprland-guiutils hyprland-devel
 systemctl --user add-wants hyprland-session.target dms.service
 systemctl --user enable --now dsearch.service
