@@ -201,6 +201,13 @@ cp -r "$REPO/dms/config/." "$CFG/dms/"
 cp "$REPO/dms/state/session.json" "$STATE/dms/"
 systemctl --user add-wants hyprland-session.target dms.service
 systemctl --user enable --now dsearch.service
+# Icon theme: DMS applies it through gsettings, and at startup it compares gsettings with the
+# theme it applied last (session.json); on a fresh system gsettings still says Adwaita, so DMS
+# takes it for an outside change and switches to "System Default". Set it beforehand.
+icon_theme="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("iconThemeDark",""))' "$REPO/dms/config/settings.json")"
+if [[ -n "$icon_theme" && "$icon_theme" != "System Default" ]]; then
+    gsettings set org.gnome.desktop.interface icon-theme "$icon_theme"
+fi
 
 # Alacritty
 mkdir -p "$CFG/alacritty"
