@@ -72,7 +72,7 @@
   "recentColors": [
     "#ff0005"
   ],
-  "lastPlayerIdentity": "Mozilla zen",
+  "lastPlayerIdentity": "Spotify",
   "niriOutputSettings": {
     "DP-1": {}
   },
@@ -90,13 +90,15 @@
   "lastAppliedIconTheme": "Sweet-Red",
   "launcherQueryHistory": [
     "zen",
-    "dms",
+    "spotif",
+    "sdfa",
+    "nobra",
     "nobara",
+    "dms",
     "update",
     "obs",
     "vesk",
     "z",
-    "spotif",
     "wha",
     "zap",
     "code",
@@ -136,9 +138,7 @@
     "fas",
     "spo",
     "soitu",
-    "edit",
-    "file",
-    "fast"
+    "edit"
   ],
   "niriOverviewLastMode": "all",
   "configVersion": 7

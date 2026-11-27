@@ -46,6 +46,10 @@ hl.config({
 		disable_hyprland_logo = true,
 		disable_splash_rendering = true,
 	},
+	-- No donation screen (hyprland-donate-screen, from hyprland-guiutils)
+	ecosystem = {
+		no_donation_nag = true,
+	},
 	dwindle = {
 		preserve_split = true,
 	},

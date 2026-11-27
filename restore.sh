@@ -22,8 +22,10 @@ HYPR_REPO_ID="copr:copr.fedorainfracloud.org:lionheartp:Hyprland"
 PACKAGES=(dms danksearch matugen dgop alacritty fish zoxide gcr gnome-keyring
     breeze-icon-theme xdg-desktop-portal-gtk lua-devel make)
 # Installed without weak deps: they pull a bar, a launcher and kitty, which DMS already covers.
+# hyprland-guiutils: dialogs Hyprland runs (app not responding, permissions, update news);
+# without it Hyprland shows a warning on every login.
 # hyprland-devel: Hyprland headers (and compiler) to build the hyprexpo plugin.
-HYPR_PACKAGES=(hyprland xdg-desktop-portal-hyprland hyprland-devel)
+HYPR_PACKAGES=(hyprland xdg-desktop-portal-hyprland hyprland-guiutils hyprland-devel)
 
 # Packages: only the missing ones, so on an already set up system nothing is asked
 missing() { for p in "$@"; do rpm -q "$p" >/dev/null 2>&1 || echo "$p"; done; }
