@@ -71,6 +71,14 @@ HYPR_PACKAGES=(hyprland xdg-desktop-portal-hyprland hyprland-guiutils hyprland-d
 
 # Whether a repo is configured (enabled or not); `dnf repo info` exits 0 even for unknown repos
 has_repo() { dnf -q repo list --all 2>/dev/null | awk '{print $1}' | grep -qx "$1"; }
+# Enables a COPR unless it already is, either on its own or pulled in as another COPR's
+# dependency (duxlabs/dms brings duxlabs/dux-repo as "coprdep:..."); dnf prints its disclaimer
+# every time it enables one
+copr_enable() {
+    local id="copr.fedorainfracloud.org:${1/\//:}"
+    dnf -q repo list --enabled 2>/dev/null | awk '{print $1}' | grep -qxE "(copr|coprdep):$id" ||
+        sudo dnf copr enable -y "$1"
+}
 # Packages: only the missing ones, so on an already set up system nothing is asked.
 # Checked by capability, so replacements count (e.g. mesa-vulkan-drivers-freeworld).
 missing() { for p in "$@"; do rpm -q --whatprovides "$p" >/dev/null 2>&1 || echo "$p"; done; }
@@ -85,8 +93,7 @@ if (( ${#need[@]} + ${#need_hypr[@]} )); then
     echo "Installing ${need[*]} ${need_hypr[*]} (needs sudo)"
     # dnf copr and dnf config-manager come from dnf5-plugins
     rpm -q dnf5-plugins >/dev/null || sudo dnf install -y dnf5-plugins
-    for c in "${DMS_COPRS[@]}"; do sudo dnf copr enable -y "$c"; done
-    sudo dnf copr enable -y "$HYPR_COPR"
+    for c in "${DMS_COPRS[@]}" "$HYPR_COPR"; do copr_enable "$c"; done
     # The Hyprland COPR also ships quickshell and matugen; keep the versions DMS depends on
     sudo dnf config-manager setopt "$HYPR_REPO_ID.excludepkgs=quickshell,matugen"
     # Nobara's terra repo ships a newer glaze-devel that doesn't provide glaze-static, which
