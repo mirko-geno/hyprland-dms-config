@@ -96,6 +96,7 @@ set up it does not ask for sudo:
 | [`avengemedia/dms`](https://copr.fedorainfracloud.org/coprs/avengemedia/dms/) COPR (+ its dependency repo `avengemedia/danklinux`) | `dms` (pulls `dms-cli`, `quickshell`), `danksearch`, `matugen`, `dgop`; `dms-greeter` (login screen, minimal install only) |
 | [`lionheartp/Hyprland`](https://copr.fedorainfracloud.org/coprs/lionheartp/Hyprland/) COPR (recommended by the Hyprland wiki) | `hyprland`, `xdg-desktop-portal-hyprland`, `hyprland-guiutils`, `hyprland-devel` (to build hyprexpo; same version as an installed `hyprland`) |
 | Fedora | `alacritty`, `fish`, `zoxide`, `gcr`, `gnome-keyring`, `breeze-icon-theme`, `xdg-desktop-portal-gtk`, `lua-devel` and `make` (hyprexpo) (and `dnf5-plugins` for `dnf copr`) |
+| [`avengemedia/danklinux`](https://copr.fedorainfracloud.org/coprs/avengemedia/danklinux/) COPR (enabled with `avengemedia/dms`) | `dux-files` (file manager, `dfiles`), set as the default app for folders with `xdg-mime` |
 | Fedora: desktop basics a minimal install lacks | graphics `mesa-dri-drivers`, `mesa-vulkan-drivers`; audio `pipewire`, `pipewire-pulseaudio`, `wireplumber`; battery/power `upower`, `power-profiles-daemon`; `NetworkManager-wifi`, `bluez`; `polkit`, `xdg-utils`, `xdg-user-dirs`; `python3`, `git-core` (used by `restore.sh` and `hyprexpo.sh`); fonts `google-noto-sans-vf-fonts`, `google-noto-sans-mono-vf-fonts`, `google-noto-color-emoji-fonts`, `fira-code-fonts` (DMS monospace font); `greetd` and `acl` (minimal install only) |
 
 - DMS packages are installed with weak deps (DMS recommends `cava`, `qt6ct`,
@@ -123,7 +124,7 @@ set up it does not ask for sudo:
   group isn't active yet) to copy the DMS theme and wallpaper to it. Fedora's `/etc/pam.d/greetd` already unlocks gnome-keyring at login.
 - NVIDIA GPUs need the proprietary driver from RPM Fusion, which is not handled here
   (Intel/AMD work with Mesa).
-- Apps (browser, file manager, editor...) are not installed by `restore.sh`.
+- Apart from Dux Files, apps (browser, editor...) are not installed by `restore.sh`.
 - Untested on an actual minimal install yet: try it in a VM first.
 
 Manual equivalent of the package part (Workstation):

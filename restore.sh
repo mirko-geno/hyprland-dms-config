@@ -23,6 +23,9 @@ HYPR_REPO_ID="copr:copr.fedorainfracloud.org:lionheartp:Hyprland"
 # lua-devel, make: to build the hyprexpo plugin (hyprexpo.sh).
 PACKAGES=(dms danksearch matugen dgop alacritty fish zoxide gcr gnome-keyring
     breeze-icon-theme xdg-desktop-portal-gtk lua-devel make)
+# dux-files: file manager from the DMS developers (avengemedia/danklinux repo; its weak deps
+# gvfs and udisks2 handle trash, network places and USB drives)
+PACKAGES+=(dux-files)
 # Desktop basics that Fedora Workstation has and a minimal install doesn't:
 # graphics (Intel/AMD; NVIDIA needs RPM Fusion), audio (DMS volume uses PipeWire), battery and
 # power profiles, Wi-Fi and Bluetooth, fonts (DMS uses Fira Code as monospace), xdg tools,
@@ -185,6 +188,9 @@ fi
 
 # Standard user folders (Documents, Downloads...), which a minimal install doesn't create
 xdg-user-dirs-update
+
+# Dux Files opens folders (xdg-open, "show in folder" from apps); saved in ~/.config/mimeapps.list
+xdg-mime default dev.duxlabs.files.desktop inode/directory
 
 # Copy the DMS theme, wallpaper and settings to the login screen (after DMS config is restored)
 if [[ -n "${SETUP_GREETER:-}" ]]; then
