@@ -60,12 +60,9 @@ PACKAGES+=(python3 git-core libva-utils dconf mesa-dri-drivers mesa-vulkan-drive
     upower power-profiles-daemon NetworkManager-wifi bluez polkit xdg-utils xdg-user-dirs
     google-noto-sans-vf-fonts google-noto-sans-mono-vf-fonts google-noto-color-emoji-fonts
     fira-code-fonts)
-# Login screen, only when there is no display manager yet (a minimal install has none;
-# on Workstation GDM is kept): greetd with the DMS greeter
-if [[ ! -e /etc/systemd/system/display-manager.service ]]; then
-    PACKAGES+=(greetd dux-greeter)
-    SETUP_GREETER=1
-fi
+# Login screen: greetd with the DMS greeter, on every system (it replaces GDM, SDDM or
+# LightDM; set up at the end of the script)
+PACKAGES+=(greetd dux-greeter)
 # Installed without weak deps: they pull a bar, a launcher and kitty, which DMS already covers.
 # hyprland-guiutils: dialogs Hyprland runs (app not responding, permissions, update news);
 # without it Hyprland shows a warning on every login.
@@ -300,12 +297,14 @@ done
 
 echo "Done. Hyprland reloads its config on its own (or run: hyprctl reload); for DMS: dms restart"
 
-# Login screen (minimal install). Last, once everything else succeeded (set -e stops the script
-# on any error before this), because `dms-greeter enable` starts greetd right away.
-# sync copies the DMS theme, wallpaper and settings to the greeter; it refuses to run unless
-# the user is in the greeter group, which is new in this login, hence sg. enable writes the
-# greetd config, PAM and SELinux bits and enables greetd (it asks for sudo itself).
-if [[ -n "${SETUP_GREETER:-}" ]]; then
+# Login screen: the DMS greeter takes over from whatever display manager the system has, unless
+# greetd already is the display manager (re-runs skip this). Last, once everything else
+# succeeded (set -e stops the script on any error before this), because `dms-greeter enable`
+# starts greetd right away. sync copies the DMS theme, wallpaper and settings to the greeter;
+# it refuses to run unless the user is in the greeter group, which is new in this login, hence
+# sg. enable writes the greetd config, PAM and SELinux bits, disables GDM/SDDM/LightDM and
+# enables greetd (it asks for sudo itself).
+if [[ "$(readlink -f /etc/systemd/system/display-manager.service 2>/dev/null)" != */greetd.service ]]; then
     echo "Setting up the DMS greeter as the login screen (reboot afterwards if it doesn't show up)"
     id -nG | grep -qw greeter || sudo usermod -aG greeter "$(id -un)"
     sg greeter -c "dms-greeter sync" ||

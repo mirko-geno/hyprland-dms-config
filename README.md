@@ -84,11 +84,9 @@ cd ~/hyprland-dms-config
 The repo is private: cloning over HTTPS asks for a GitHub username and a personal access
 token (or set up an SSH key first and use the `git@github.com:` URL).
 
-- **Workstation:** log out and pick **Hyprland** in GDM (gear icon at the bottom right).
-  GDM is kept; the DMS greeter is not installed.
-- **Minimal install:** reboot. There was no display manager, so `restore.sh` sets up greetd
-  with the DMS greeter (themed like the desktop) and makes the system boot to the
-  graphical target.
+- Reboot: `restore.sh` sets up greetd with the DMS greeter (themed like the desktop) as the
+  login screen, replacing GDM, SDDM or LightDM if the system had one, and makes the system
+  boot to the graphical target. The greeter runs on Hyprland; pick the session there.
 
 `restore.sh` installs only the packages that are missing (checked by what they provide, so
 replacements like `mesa-vulkan-drivers-freeworld` count), so on a system that is already
@@ -97,7 +95,7 @@ set up it does not ask for sudo:
 | Source | Packages |
 |---|---|
 | [`duxlabs/dms`](https://copr.fedorainfracloud.org/coprs/duxlabs/dms/) COPR | `dms` (pulls `dms-cli`, `quickshell`) |
-| [`duxlabs/dux-repo`](https://copr.fedorainfracloud.org/coprs/duxlabs/dux-repo/) COPR | `dux-search` (`dsearch`), `matugen`, `dux-gop` (`dgop`); `dux-greeter` (`dms-greeter`, login screen, minimal install only) |
+| [`duxlabs/dux-repo`](https://copr.fedorainfracloud.org/coprs/duxlabs/dux-repo/) COPR | `dux-search` (`dsearch`), `matugen`, `dux-gop` (`dgop`); `dux-greeter` (`dms-greeter`, login screen) |
 | [`lionheartp/Hyprland`](https://copr.fedorainfracloud.org/coprs/lionheartp/Hyprland/) COPR (recommended by the Hyprland wiki) | `hyprland`, `xdg-desktop-portal-hyprland`, `hyprland-guiutils`, `hyprland-devel` (to build hyprexpo; same version as an installed `hyprland`) |
 | Fedora | `alacritty`, `fish`, `zoxide`, `gcr`, `gnome-keyring`, `breeze-icon-theme`, `xdg-desktop-portal-gtk`, `lua-devel` and `make` (hyprexpo) (and `dnf5-plugins` for `dnf copr`) |
 | [`duxlabs/dux-repo`](https://copr.fedorainfracloud.org/coprs/duxlabs/dux-repo/) COPR | `dux-files` (file manager, `dfiles`), set as the default app for folders with `xdg-mime` |
@@ -109,7 +107,7 @@ set up it does not ask for sudo:
 | [`duxlabs/dux-repo`](https://copr.fedorainfracloud.org/coprs/duxlabs/dux-repo/) COPR | `dux-edit` (text editor, `dedit`), `dux-calendar` (calendar, `dcal`; its reminders need it running: "Start at login" in its settings or `systemctl --user enable --now dcal`) |
 | Flathub | Zen Browser (`app.zen_browser.zen`, system-wide), set as the default browser with `xdg-mime` |
 | [RPM Fusion](https://rpmfusion.org) free and nonfree (only if the GPU is AMD or Intel) | Hardware video decoding with the patented codecs Fedora leaves out: `mesa-va-drivers-freeworld` (AMD, swapped for Fedora's `mesa-va-drivers`), `intel-media-driver` (Intel, replaces Fedora's `libva-intel-media-driver`). The GPU vendor is read from `/sys/class/drm/card*/device/vendor`; check it with `vainfo` |
-| Fedora: desktop basics a minimal install lacks | graphics `mesa-dri-drivers`, `mesa-vulkan-drivers`; audio `pipewire`, `pipewire-pulseaudio`, `wireplumber`; battery/power `upower`, `power-profiles-daemon`; `NetworkManager-wifi`, `bluez`; `polkit`, `xdg-utils`, `xdg-user-dirs`; `python3`, `git-core` (used by `restore.sh` and `hyprexpo.sh`), `libva-utils` (`vainfo`), `dconf` (stores gsettings, e.g. the icon theme); fonts `google-noto-sans-vf-fonts`, `google-noto-sans-mono-vf-fonts`, `google-noto-color-emoji-fonts`, `fira-code-fonts` (DMS monospace font); `greetd` (minimal install only) |
+| Fedora: desktop basics a minimal install lacks | graphics `mesa-dri-drivers`, `mesa-vulkan-drivers`; audio `pipewire`, `pipewire-pulseaudio`, `wireplumber`; battery/power `upower`, `power-profiles-daemon`; `NetworkManager-wifi`, `bluez`; `polkit`, `xdg-utils`, `xdg-user-dirs`; `python3`, `git-core` (used by `restore.sh` and `hyprexpo.sh`), `libva-utils` (`vainfo`), `dconf` (stores gsettings, e.g. the icon theme); fonts `google-noto-sans-vf-fonts`, `google-noto-sans-mono-vf-fonts`, `google-noto-color-emoji-fonts`, `fira-code-fonts` (DMS monospace font); `greetd` (login screen) |
 
 - DMS comes from the Dux Labs COPRs. The older `avengemedia/dms` and `avengemedia/danklinux`
   COPRs are deprecated; `dms migrate dux` moves an existing install (only the repos change:
@@ -136,14 +134,16 @@ set up it does not ask for sudo:
   gsettings still says Adwaita, so DMS took it for an outside change and switched to the
   default icons.
 - Bluetooth (`bluetooth.service`) is enabled if it isn't.
-- Login screen (only when `/etc/systemd/system/display-manager.service` does not exist), the
+- Login screen (unless greetd already is the display manager, so re-runs skip it), the
   very last step, so it only happens once everything else succeeded: `restore.sh` adds the
   user to the `greeter` group (`dms-greeter sync` refuses to run otherwise), runs
   `dms-greeter sync` (through `sg greeter`, since the new group isn't active yet) to copy the
   DMS theme and wallpaper to the greeter, sets `graphical.target` as default and runs
   `dms-greeter enable`, which writes the greetd config, PAM and SELinux bits and enables (and
-  starts) greetd. Fedora's `/etc/pam.d/greetd` already unlocks gnome-keyring at login.
-  Check it with `dms-greeter status`.
+  starts) greetd, disabling GDM/SDDM/LightDM. Fedora's `/etc/pam.d/greetd` already unlocks
+  gnome-keyring at login. Check it with `dms-greeter status`. To go back to GDM (from a TTY,
+  Ctrl+Alt+F3, if the greeter doesn't start): `sudo systemctl disable greetd && sudo systemctl
+  enable gdm`, then reboot.
 - NVIDIA GPUs need the proprietary driver from RPM Fusion, which is not handled here
   (Intel/AMD work with Mesa).
 - Apart from the apps listed above, apps (browser, editor...) are not installed by `restore.sh`.
