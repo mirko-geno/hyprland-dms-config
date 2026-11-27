@@ -23,4 +23,7 @@ comes from a Nobara repo. Repos restore.sh adds on purpose: duxlabs/dms, duxlabs
 lionheartp/Hyprland, Microsoft's vscode repo, Flathub, and RPM Fusion free+nonfree only when the GPU is
 AMD or Intel (HW video decoding: mesa-va-drivers-freeworld / intel-media-driver). Not added: terra (Nobara-only; the
 script only adds a glaze-devel exclude when terra exists). dnf5 `repo info X` exits 0 even for
-unknown repos: use `dnf repo list --all` (restore.sh `has_repo`). See [[hyprland-dms-setup]].
+unknown repos: use `dnf repo list --all` (restore.sh `has_repo`). Conflicting alternatives:
+require the capability, not a package name (power profiles: Fedora 41+ ships tuned-ppd, Nobara
+power-profiles-daemon, both provide ppd-service and conflict; Wine: Nobara's winehq-staging
+conflicts with Fedora's wine). See [[hyprland-dms-setup]].
