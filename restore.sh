@@ -30,6 +30,9 @@ PACKAGES=(dms dux-search matugen dux-gop alacritty fish zoxide gcr gnome-keyring
 # root through the DMS polkit agent), baobab (Disk Usage Analyzer) and gnome-boxes (virtual
 # machines; pulls QEMU/KVM and libvirt, whose sockets the package presets enable)
 PACKAGES+=(dux-files gnome-disk-utility baobab gnome-boxes)
+# More GNOME apps: loupe (Image Viewer), papers (Document Viewer: PDF...), decibels (Audio
+# Player), showtime (Video Player), snapshot (Camera), gnome-calculator
+PACKAGES+=(loupe papers decibels showtime snapshot gnome-calculator)
 # Flatpak with Flathub (remote added below) and GNOME Software as the app store (its flatpak
 # plugin is built in; it talks to dnf through dnf5daemon, started on demand over D-Bus).
 # code: VS Code from Microsoft's repo (set up below, before installing)
@@ -214,6 +217,13 @@ xdg-user-dirs-update
 
 # Dux Files opens folders (xdg-open, "show in folder" from apps); saved in ~/.config/mimeapps.list
 xdg-mime default dev.duxlabs.files.desktop inode/directory
+# Default apps for images, documents, audio and video: every type each app declares
+for app in org.gnome.Loupe org.gnome.Papers org.gnome.Decibels org.gnome.Showtime; do
+    f="/usr/share/applications/$app.desktop"
+    [[ -f "$f" ]] || continue
+    read -ra types < <(sed -n 's/^MimeType=//p' "$f" | tr ';' ' ')
+    (( ${#types[@]} )) && xdg-mime default "$app.desktop" "${types[@]}"
+done
 
 # Copy the DMS theme, wallpaper and settings to the login screen (after DMS config is restored)
 if [[ -n "${SETUP_GREETER:-}" ]]; then
