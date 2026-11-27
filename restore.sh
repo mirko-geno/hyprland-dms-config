@@ -246,12 +246,28 @@ if [[ -d "$REPO/claude" ]]; then
     cp -r "$REPO/claude/." "$CLAUDE_PROJECT/"
 fi
 
-# Wallpaper: copied to the path session.json expects if it is missing
-wp="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("wallpaperPath",""))' "$REPO/dms/state/session.json")"
-if [[ -n "$wp" && ! -f "$wp" && -f "$REPO/wallpaper/$(basename "$wp")" ]]; then
-    mkdir -p "$(dirname "$wp")"
-    cp "$REPO/wallpaper/$(basename "$wp")" "$wp"
-fi
+# Wallpapers: each one session.json uses (general, light/dark, per monitor) is copied from
+# wallpaper/ to the path it expects, if missing. The laptop screen (eDP-1) gets the general
+# wallpaper as its own unless it already has one (DMS only saves a monitor's wallpaper while
+# that monitor is connected).
+while IFS= read -r wp; do
+    if [[ ! -f "$wp" && -f "$REPO/wallpaper/$(basename "$wp")" ]]; then
+        mkdir -p "$(dirname "$wp")"
+        cp "$REPO/wallpaper/$(basename "$wp")" "$wp"
+    fi
+done < <(python3 - "$STATE/dms/session.json" <<'PY'
+import json, sys
+f = sys.argv[1]
+d = json.load(open(f))
+mon = d.setdefault("monitorWallpapers", {})
+if d.get("perMonitorWallpaper") and d.get("wallpaperPath") and "eDP-1" not in mon:
+    mon["eDP-1"] = d["wallpaperPath"]
+    json.dump(d, open(f, "w"), indent=2)
+paths = [d.get(k, "") for k in ("wallpaperPath", "wallpaperPathLight", "wallpaperPathDark")]
+paths += mon.values()
+print("\n".join(dict.fromkeys(p for p in paths if p and not p.startswith("#"))))
+PY
+)
 
 # Standard user folders (Documents, Downloads...), which a minimal install doesn't create
 xdg-user-dirs-update

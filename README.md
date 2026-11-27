@@ -35,7 +35,7 @@ ssh-agent/
 claude/
 ├── *.jsonl         # Claude Code session(s) used to build this setup
 └── memory/         # Claude Code memory for this project
-wallpaper/          # the wallpaper currently in use
+wallpaper/          # the wallpapers in use (general, light/dark and per monitor)
 ```
 
 ## Backup and restore
@@ -59,8 +59,11 @@ dms restart
   3. Backs up your current system config to `~/.config-backups/<date>/`.
   4. Copies everything, installs `fish`/`zoxide` if missing and makes fish the default shell.
 - Hyprland reloads its config on save (or `hyprctl reload`); DMS needs `dms restart`.
-- Only the wallpaper in use is saved, not the whole `~/.wallpapers` folder. On restore,
-  it is copied to its original path if it is missing.
+- Only the wallpapers in use are saved (the general one, light/dark and each monitor's from
+  `session.json`), not the whole `~/.wallpapers` folder. On restore, each is copied to its
+  original path if it is missing. Per monitor: DP-1 and HDMI-A-1 have their own; the laptop
+  screen (eDP-1) gets the general wallpaper as its own if it has none, since DMS only saves a
+  monitor's wallpaper while that monitor is connected.
 
 > **Shared with niri:** `dms/`, `alacritty/`, `fish/`, `cursor/`, `ssh-agent/` and the
 > wallpaper are the same files the niri repo saves, since both sessions use them.
