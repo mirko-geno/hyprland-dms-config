@@ -36,8 +36,11 @@ PACKAGES+=(loupe papers decibels showtime snapshot gnome-calculator)
 # dux-edit: text editor from Dux Labs (dedit), for quick edits outside VS Code;
 # dux-calendar: calendar (dcal; Google, Microsoft, CalDAV, iCloud, Evolution accounts)
 PACKAGES+=(dux-edit dux-calendar)
-# Wine (Fedora's build; pulls the 32-bit libraries for older Windows apps) and winetricks
-PACKAGES+=(wine winetricks)
+# Wine (Fedora's build; pulls the 32-bit libraries for older Windows apps) and winetricks.
+# Only if there is no Wine yet: Nobara ships its own gaming build (winehq-staging, which
+# conflicts with Fedora's wine and doesn't provide it), and that one is kept.
+command -v wine >/dev/null || PACKAGES+=(wine)
+PACKAGES+=(winetricks)
 # Codecs for the GStreamer apps (Showtime, Decibels...): what Fedora ships without RPM Fusion.
 # openh264 comes from Fedora's Cisco repo; installed apart with --skip-unavailable so a
 # missing one doesn't stop the rest
