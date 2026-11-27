@@ -151,7 +151,11 @@ set up it does not ask for sudo:
   `dms-greeter sync` (through `sg greeter`, since the new group isn't active yet) to copy the
   DMS theme and wallpaper to the greeter, sets `graphical.target` as default and runs
   `dms-greeter enable`, which writes the greetd config, PAM and SELinux bits and enables (and
-  starts) greetd, disabling GDM/SDDM/LightDM. Fedora's `/etc/pam.d/greetd` already unlocks
+  starts) greetd, disabling GDM/SDDM/LightDM. `enable` picks the greeter's compositor by
+  itself and once picked niri on a Hyprland-only system (login failed with `required command
+  "niri" was not found in PATH`), but it keeps the one already in `/etc/greetd/config.toml`:
+  `setup.sh` writes `--command hyprland` there first, and on every run switches the greetd
+  command to Hyprland if it names another compositor (dropping its `-C` config). Fedora's `/etc/pam.d/greetd` already unlocks
   gnome-keyring at login. Check it with `dms-greeter status`. To go back to GDM (from a TTY,
   Ctrl+Alt+F3, if the greeter doesn't start): `sudo systemctl disable greetd && sudo systemctl
   enable gdm`, then reboot.

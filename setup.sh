@@ -442,5 +442,16 @@ if [[ "$(readlink -f /etc/systemd/system/display-manager.service 2>/dev/null)" !
     sg greeter -c "dms-greeter sync" ||
         echo "dms-greeter sync failed; run it again after logging in to Hyprland" >&2
     sudo systemctl set-default graphical.target
+    # enable picks the greeter's compositor itself and can pick niri even when only Hyprland
+    # is installed (it did on a fresh Fedora 45), but it keeps the one already in the greetd
+    # config: write Hyprland there first
+    sudo sed -i 's|^command = .*|command = "/usr/bin/dms-greeter --command hyprland"|' /etc/greetd/config.toml
     dms-greeter enable
+fi
+# The greeter must run on Hyprland: if the greetd config names another compositor, switch it
+# (dropping -C, a config file for that other compositor). Also fixes systems set up before.
+greetd_cmd="$({ cat /etc/greetd/config.toml 2>/dev/null || sudo cat /etc/greetd/config.toml; } | grep '^command = ' || true)"
+if [[ "$greetd_cmd" == *--command* && "$greetd_cmd" != *"--command hyprland"* ]]; then
+    echo "The login screen used another compositor; switching it to Hyprland (needs sudo)"
+    sudo sed -i -E '/^command = /{s/--command [^ "]+/--command hyprland/; s/ -C [^ "]+//}' /etc/greetd/config.toml
 fi
