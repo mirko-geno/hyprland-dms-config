@@ -51,15 +51,19 @@ CODECS=(gstreamer1-plugins-good gstreamer1-plugins-bad-free gstreamer1-plugins-u
 # code: VS Code from Microsoft's repo (set up below, before installing)
 PACKAGES+=(flatpak gnome-software code)
 # Desktop basics that Fedora Workstation has and a minimal install doesn't:
-# graphics (Intel/AMD; NVIDIA needs RPM Fusion), audio (DMS volume uses PipeWire), battery and
-# power profiles, Wi-Fi and Bluetooth, fonts (DMS uses Fira Code as monospace), xdg tools,
+# graphics (Intel/AMD; NVIDIA needs RPM Fusion), audio (DMS volume uses PipeWire), battery,
+# Wi-Fi and Bluetooth, fonts (DMS uses Fira Code as monospace), xdg tools,
 # python3 (reads session.json below), git (hyprexpo.sh clones the plugin), libva-utils (vainfo),
 # dconf (stores gsettings; without it settings like the icon theme are lost)
 PACKAGES+=(python3 git-core libva-utils dconf mesa-dri-drivers mesa-vulkan-drivers
     pipewire pipewire-pulseaudio wireplumber
-    upower power-profiles-daemon NetworkManager-wifi bluez polkit xdg-utils xdg-user-dirs
+    upower NetworkManager-wifi bluez polkit xdg-utils xdg-user-dirs
     google-noto-sans-vf-fonts google-noto-sans-mono-vf-fonts google-noto-color-emoji-fonts
     fira-code-fonts)
+# Power profiles (the DMS power profile switch): any provider of ppd-service is kept, since
+# tuned-ppd and power-profiles-daemon conflict. Fedora 41+ ships tuned-ppd (tuned's profiles,
+# more power saving tweaks), Nobara power-profiles-daemon; tuned-ppd when there is none.
+rpm -q --whatprovides ppd-service >/dev/null 2>&1 || PACKAGES+=(tuned-ppd)
 # Login screen: greetd with the DMS greeter, on every system (it replaces GDM, SDDM or
 # LightDM; set up at the end of the script)
 PACKAGES+=(greetd dux-greeter)
@@ -256,10 +260,18 @@ fi
 
 # Profile picture: set through AccountsService (what DMS and the DMS greeter read; changing
 # your own picture needs no password). accounts-daemon copies it into its icons folder.
+# DMS reads the picture only when it starts, so a running DMS shows the new one after a restart.
 if [[ -f "$REPO/profile/avatar" ]]; then
-    busctl call org.freedesktop.Accounts "/org/freedesktop/Accounts/User$(id -u)" \
-        org.freedesktop.Accounts.User SetIconFile s "$REPO/profile/avatar" ||
-        echo "Could not set the profile picture" >&2
+    user_obj="/org/freedesktop/Accounts/User$(id -u)"
+    busctl call org.freedesktop.Accounts "$user_obj" org.freedesktop.Accounts.User \
+        SetIconFile s "$REPO/profile/avatar" || true
+    icon="$(busctl get-property org.freedesktop.Accounts "$user_obj" \
+        org.freedesktop.Accounts.User IconFile 2>/dev/null | sed -n 's/^s "\(.*\)"$/\1/p')"
+    if [[ -n "$icon" ]] && cmp -s "$icon" "$REPO/profile/avatar"; then
+        echo "Profile picture set ($icon); restart DMS (dms restart) if it is running to see it"
+    else
+        echo "Could not set the profile picture (AccountsService has: ${icon:-none})" >&2
+    fi
 fi
 
 # Wallpapers: each one session.json uses (general, light/dark, per monitor) is copied from
