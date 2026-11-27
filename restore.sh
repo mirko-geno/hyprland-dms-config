@@ -33,8 +33,9 @@ PACKAGES+=(dux-files gnome-disk-utility baobab gnome-boxes)
 # More GNOME apps: loupe (Image Viewer), papers (Document Viewer: PDF...), decibels (Audio
 # Player), showtime (Video Player), snapshot (Camera), gnome-calculator
 PACKAGES+=(loupe papers decibels showtime snapshot gnome-calculator)
-# dux-edit: text editor from Dux Labs (dedit), for quick edits outside VS Code
-PACKAGES+=(dux-edit)
+# dux-edit: text editor from Dux Labs (dedit), for quick edits outside VS Code;
+# dux-calendar: calendar (dcal; Google, Microsoft, CalDAV, iCloud, Evolution accounts)
+PACKAGES+=(dux-edit dux-calendar)
 # Wine (Fedora's build; pulls the 32-bit libraries for older Windows apps) and winetricks
 PACKAGES+=(wine winetricks)
 # Codecs for the GStreamer apps (Showtime, Decibels...): what Fedora ships without RPM Fusion.
