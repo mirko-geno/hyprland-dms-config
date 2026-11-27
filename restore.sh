@@ -26,9 +26,10 @@ PACKAGES=(dms dux-search matugen dux-gop alacritty fish zoxide gcr gnome-keyring
     breeze-icon-theme xdg-desktop-portal-gtk lua-devel make)
 # dux-files: file manager from the DMS developers (duxlabs/dux-repo; its weak deps
 # gvfs and udisks2 handle trash, network places and USB drives)
-# gnome-disk-utility: GNOME Disks (partitions, formatting, SMART, disk images); asks for
-# root through the DMS polkit agent
-PACKAGES+=(dux-files gnome-disk-utility)
+# GNOME apps: gnome-disk-utility (Disks: partitions, formatting, SMART, disk images; asks for
+# root through the DMS polkit agent), baobab (Disk Usage Analyzer) and gnome-boxes (virtual
+# machines; pulls QEMU/KVM and libvirt, whose sockets the package presets enable)
+PACKAGES+=(dux-files gnome-disk-utility baobab gnome-boxes)
 # Desktop basics that Fedora Workstation has and a minimal install doesn't:
 # graphics (Intel/AMD; NVIDIA needs RPM Fusion), audio (DMS volume uses PipeWire), battery and
 # power profiles, Wi-Fi and Bluetooth, fonts (DMS uses Fira Code as monospace), xdg tools,

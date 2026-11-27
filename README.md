@@ -98,7 +98,7 @@ set up it does not ask for sudo:
 | [`lionheartp/Hyprland`](https://copr.fedorainfracloud.org/coprs/lionheartp/Hyprland/) COPR (recommended by the Hyprland wiki) | `hyprland`, `xdg-desktop-portal-hyprland`, `hyprland-guiutils`, `hyprland-devel` (to build hyprexpo; same version as an installed `hyprland`) |
 | Fedora | `alacritty`, `fish`, `zoxide`, `gcr`, `gnome-keyring`, `breeze-icon-theme`, `xdg-desktop-portal-gtk`, `lua-devel` and `make` (hyprexpo) (and `dnf5-plugins` for `dnf copr`) |
 | [`duxlabs/dux-repo`](https://copr.fedorainfracloud.org/coprs/duxlabs/dux-repo/) COPR | `dux-files` (file manager, `dfiles`), set as the default app for folders with `xdg-mime` |
-| Fedora: apps | `gnome-disk-utility` (GNOME Disks: partitions, formatting, SMART, disk images) |
+| Fedora: apps | `gnome-disk-utility` (GNOME Disks: partitions, formatting, SMART, disk images), `baobab` (Disk Usage Analyzer), `gnome-boxes` (virtual machines; pulls QEMU/KVM and libvirt, a couple of GB) |
 | Fedora: desktop basics a minimal install lacks | graphics `mesa-dri-drivers`, `mesa-vulkan-drivers`; audio `pipewire`, `pipewire-pulseaudio`, `wireplumber`; battery/power `upower`, `power-profiles-daemon`; `NetworkManager-wifi`, `bluez`; `polkit`, `xdg-utils`, `xdg-user-dirs`; `python3`, `git-core` (used by `restore.sh` and `hyprexpo.sh`); fonts `google-noto-sans-vf-fonts`, `google-noto-sans-mono-vf-fonts`, `google-noto-color-emoji-fonts`, `fira-code-fonts` (DMS monospace font); `greetd` and `acl` (minimal install only) |
 
 - DMS comes from the Dux Labs COPRs. The older `avengemedia/dms` and `avengemedia/danklinux`
@@ -129,7 +129,7 @@ set up it does not ask for sudo:
   group isn't active yet) to copy the DMS theme and wallpaper to it. Fedora's `/etc/pam.d/greetd` already unlocks gnome-keyring at login.
 - NVIDIA GPUs need the proprietary driver from RPM Fusion, which is not handled here
   (Intel/AMD work with Mesa).
-- Apart from Dux Files and GNOME Disks, apps (browser, editor...) are not installed by `restore.sh`.
+- Apart from Dux Files, Disks, Disk Usage Analyzer and Boxes, apps (browser, editor...) are not installed by `restore.sh`.
 - Untested on an actual minimal install yet: try it in a VM first.
 
 Manual equivalent of the package part (Workstation):
