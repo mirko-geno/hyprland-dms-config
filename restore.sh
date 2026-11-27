@@ -12,18 +12,19 @@ STATE="${XDG_STATE_HOME:-$HOME/.local/state}"
 BACKUP="$HOME/.config-backups/$(date +%Y%m%d-%H%M%S)"
 # Claude Code keeps sessions per directory, named after its path with non-alphanumerics as "-"
 CLAUDE_PROJECT="${CLAUDE_CONFIG_DIR:-$HOME/.claude}/projects/$(printf '%s' "$REPO" | sed 's/[^a-zA-Z0-9]/-/g')"
-# COPRs: DMS (enabling it also enables its dependency repo avengemedia/danklinux, which
-# ships quickshell, matugen, dgop, danksearch...) and Hyprland (the one recommended by the
-# Hyprland wiki for Fedora)
-DMS_COPR="avengemedia/dms"
+# COPRs: Dux Labs, the DMS developers (duxlabs/dms ships the shell; duxlabs/dux-repo ships
+# quickshell, matugen, dux-search, dux-gop, dux-files, dux-greeter...; they replace the
+# deprecated avengemedia/dms and avengemedia/danklinux) and Hyprland (the one recommended by
+# the Hyprland wiki for Fedora)
+DMS_COPRS=(duxlabs/dms duxlabs/dux-repo)
 HYPR_COPR="lionheartp/Hyprland"
 HYPR_REPO_ID="copr:copr.fedorainfracloud.org:lionheartp:Hyprland"
 # Installed with weak deps (DMS recommends cava, qt6ct, qt6-qtmultimedia...).
 # breeze-icon-theme: breeze-dark is one of the fallbacks of the Sweet-Red icon theme.
 # lua-devel, make: to build the hyprexpo plugin (hyprexpo.sh).
-PACKAGES=(dms danksearch matugen dgop alacritty fish zoxide gcr gnome-keyring
+PACKAGES=(dms dux-search matugen dux-gop alacritty fish zoxide gcr gnome-keyring
     breeze-icon-theme xdg-desktop-portal-gtk lua-devel make)
-# dux-files: file manager from the DMS developers (avengemedia/danklinux repo; its weak deps
+# dux-files: file manager from the DMS developers (duxlabs/dux-repo; its weak deps
 # gvfs and udisks2 handle trash, network places and USB drives)
 PACKAGES+=(dux-files)
 # Desktop basics that Fedora Workstation has and a minimal install doesn't:
@@ -39,7 +40,7 @@ PACKAGES+=(python3 git-core mesa-dri-drivers mesa-vulkan-drivers
 # on Workstation GDM is kept): greetd with the DMS greeter
 if [[ ! -e /etc/systemd/system/display-manager.service ]]; then
     # acl: dms-greeter sync gives the greeter read access to the DMS config with setfacl
-    PACKAGES+=(greetd dms-greeter acl)
+    PACKAGES+=(greetd dux-greeter acl)
     SETUP_GREETER=1
 fi
 # Installed without weak deps: they pull a bar, a launcher and kitty, which DMS already covers.
@@ -61,7 +62,7 @@ if (( ${#need[@]} + ${#need_hypr[@]} )); then
     echo "Installing ${need[*]} ${need_hypr[*]} (needs sudo)"
     # dnf copr and dnf config-manager come from dnf5-plugins
     rpm -q dnf5-plugins >/dev/null || sudo dnf install -y dnf5-plugins
-    sudo dnf copr enable -y "$DMS_COPR"
+    for c in "${DMS_COPRS[@]}"; do sudo dnf copr enable -y "$c"; done
     sudo dnf copr enable -y "$HYPR_COPR"
     # The Hyprland COPR also ships quickshell and matugen; keep the versions DMS depends on
     sudo dnf config-manager setopt "$HYPR_REPO_ID.excludepkgs=quickshell,matugen"
@@ -136,7 +137,7 @@ cp "$REPO/hypr/xdph.conf" "$CFG/hypr/"
 
 # DMS: config, session state, and started with the Hyprland session (dms.service is a
 # systemd user service; `dms setup` normally adds this link). dsearch.service (from
-# danksearch) is the file index behind the "/" file search in DMS; its preset is disabled.
+# dux-search) is the file index behind the "/" file search in DMS; its preset is disabled.
 mkdir -p "$CFG/dms" "$STATE/dms"
 cp -r "$REPO/dms/config/." "$CFG/dms/"
 cp "$REPO/dms/state/session.json" "$STATE/dms/"
