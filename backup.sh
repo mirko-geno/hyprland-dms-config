@@ -61,6 +61,15 @@ if [[ -d "$CLAUDE_PROJECT" ]]; then
     [[ -d "$CLAUDE_PROJECT/memory" ]] && cp -r "$CLAUDE_PROJECT/memory" "$REPO/claude/"
 fi
 
+# Profile picture (AccountsService; DMS and the DMS greeter show it)
+icon="$(busctl get-property org.freedesktop.Accounts "/org/freedesktop/Accounts/User$(id -u)" \
+    org.freedesktop.Accounts.User IconFile 2>/dev/null | sed -n 's/^s "\(.*\)"$/\1/p')"
+if [[ -n "$icon" && -f "$icon" ]]; then
+    mkdir -p "$REPO/profile"
+    cp "$icon" "$REPO/profile/avatar"
+    echo "Profile picture: $icon"
+fi
+
 # Wallpapers in use (the general one, light/dark and each monitor's; not the whole folder;
 # other files in wallpaper/ are kept)
 while IFS= read -r wp; do

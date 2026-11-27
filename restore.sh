@@ -149,6 +149,14 @@ if [[ -d "$REPO/claude" ]]; then
     cp -r "$REPO/claude/." "$CLAUDE_PROJECT/"
 fi
 
+# Profile picture: set through AccountsService (what DMS and the DMS greeter read; changing
+# your own picture needs no password). accounts-daemon copies it into its icons folder.
+if [[ -f "$REPO/profile/avatar" ]]; then
+    busctl call org.freedesktop.Accounts "/org/freedesktop/Accounts/User$(id -u)" \
+        org.freedesktop.Accounts.User SetIconFile s "$REPO/profile/avatar" ||
+        echo "Could not set the profile picture" >&2
+fi
+
 # Wallpapers: each one session.json uses (general, light/dark, per monitor) is copied from
 # wallpaper/ to the path it expects, if missing. The laptop screen (eDP-1) gets the general
 # wallpaper as its own unless it already has one (DMS only saves a monitor's wallpaper while
