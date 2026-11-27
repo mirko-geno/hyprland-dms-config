@@ -30,6 +30,10 @@ PACKAGES=(dms dux-search matugen dux-gop alacritty fish zoxide gcr gnome-keyring
 # root through the DMS polkit agent), baobab (Disk Usage Analyzer) and gnome-boxes (virtual
 # machines; pulls QEMU/KVM and libvirt, whose sockets the package presets enable)
 PACKAGES+=(dux-files gnome-disk-utility baobab gnome-boxes)
+# Flatpak with Flathub (remote added below) and GNOME Software as the app store (its flatpak
+# plugin is built in; it talks to dnf through dnf5daemon, started on demand over D-Bus).
+# code: VS Code from Microsoft's repo (set up below, before installing)
+PACKAGES+=(flatpak gnome-software code)
 # Desktop basics that Fedora Workstation has and a minimal install doesn't:
 # graphics (Intel/AMD; NVIDIA needs RPM Fusion), audio (DMS volume uses PipeWire), battery and
 # power profiles, Wi-Fi and Bluetooth, fonts (DMS uses Fira Code as monospace), xdg tools,
@@ -74,10 +78,25 @@ if (( ${#need[@]} + ${#need_hypr[@]} )); then
     if dnf -q repo info terra >/dev/null 2>&1; then
         sudo dnf config-manager setopt "terra.excludepkgs=glaze-devel"
     fi
+    # VS Code: Microsoft's repo and signing key (the official instructions)
+    if [[ ! -f /etc/yum.repos.d/vscode.repo ]]; then
+        sudo rpm --import https://packages.microsoft.com/keys/microsoft.asc
+        printf '%s\n' "[code]" "name=Visual Studio Code" \
+            "baseurl=https://packages.microsoft.com/yumrepos/vscode" "enabled=1" \
+            "autorefresh=1" "type=rpm-md" "gpgcheck=1" \
+            "gpgkey=https://packages.microsoft.com/keys/microsoft.asc" |
+            sudo tee /etc/yum.repos.d/vscode.repo >/dev/null
+    fi
     if (( ${#need[@]} )); then sudo dnf install -y "${need[@]}"; fi
     if (( ${#need_hypr[@]} )); then
         sudo dnf install -y --setopt=install_weak_deps=False "${need_hypr[@]}"
     fi
+fi
+
+# Flathub, for Flatpak apps (from GNOME Software or `flatpak install flathub <app>`)
+if ! flatpak remotes --system --columns=name | grep -qx flathub; then
+    echo "Adding the Flathub remote (needs sudo)"
+    sudo flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 fi
 
 # Bluetooth is not enabled on a minimal install
