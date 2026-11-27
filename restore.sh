@@ -68,6 +68,8 @@ fi
 # hyprland-devel: Hyprland headers (and compiler) to build the hyprexpo plugin.
 HYPR_PACKAGES=(hyprland xdg-desktop-portal-hyprland hyprland-guiutils hyprland-devel)
 
+# Whether a repo is configured (enabled or not); `dnf repo info` exits 0 even for unknown repos
+has_repo() { dnf -q repo list --all 2>/dev/null | awk '{print $1}' | grep -qx "$1"; }
 # Packages: only the missing ones, so on an already set up system nothing is asked.
 # Checked by capability, so replacements count (e.g. mesa-vulkan-drivers-freeworld).
 missing() { for p in "$@"; do rpm -q --whatprovides "$p" >/dev/null 2>&1 || echo "$p"; done; }
@@ -88,7 +90,7 @@ if (( ${#need[@]} + ${#need_hypr[@]} )); then
     sudo dnf config-manager setopt "$HYPR_REPO_ID.excludepkgs=quickshell,matugen"
     # Nobara's terra repo ships a newer glaze-devel that doesn't provide glaze-static, which
     # hyprland-devel needs (from the Hyprland COPR); this adds to terra's own exclude list
-    if dnf -q repo info terra >/dev/null 2>&1; then
+    if has_repo terra; then
         sudo dnf config-manager setopt "terra.excludepkgs=glaze-devel"
     fi
     # VS Code: Microsoft's repo and signing key (the official instructions)
@@ -107,7 +109,7 @@ if (( ${#need[@]} + ${#need_hypr[@]} )); then
 fi
 if (( ${#need_codecs[@]} )); then
     echo "Installing codecs: ${need_codecs[*]} (needs sudo)"
-    if dnf -q repo info --all fedora-cisco-openh264 >/dev/null 2>&1; then
+    if has_repo fedora-cisco-openh264; then
         sudo dnf config-manager setopt fedora-cisco-openh264.enabled=1
     fi
     sudo dnf install -y --skip-unavailable "${need_codecs[@]}"
