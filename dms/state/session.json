@@ -88,8 +88,12 @@
     "niri": {}
   },
   "lastAppliedIconTheme": "Sweet-Red",
+  "launcherLastQuery": "o",
   "launcherQueryHistory": [
+    "o",
     "disks",
+    "k",
+    "dis",
     "zap",
     "files",
     "zen",
@@ -135,10 +139,7 @@
     "box",
     "boxes",
     "vis",
-    "fas",
-    "spo",
-    "soitu",
-    "edit"
+    "fas"
   ],
   "niriOverviewLastMode": "all",
   "configVersion": 7
