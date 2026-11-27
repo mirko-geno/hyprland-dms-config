@@ -85,6 +85,15 @@ copr_enable() {
     dnf -q repo list --enabled 2>/dev/null | awk '{print $1}' | grep -qxE "(copr|coprdep):$id" ||
         sudo dnf copr enable -y "$1"
 }
+# NVIDIA's driver comes only from NVIDIA's repo (see the NVIDIA block below), so RPM Fusion's
+# own NVIDIA packages (nonfree) are excluded whenever this script enables RPM Fusion or installs
+# the NVIDIA driver. An RPM Fusion set up by something else (Nobara) is left alone.
+rpmfusion_exclude_nvidia() {
+    local r
+    for r in rpmfusion-nonfree rpmfusion-nonfree-updates rpmfusion-nonfree-updates-testing; do
+        if has_repo "$r"; then sudo dnf config-manager setopt "$r.excludepkgs=*nvidia*"; fi
+    done
+}
 # Packages: only the missing ones, so on an already set up system nothing is asked.
 # Checked by capability, so replacements count (e.g. mesa-vulkan-drivers-freeworld).
 missing() { for p in "$@"; do rpm -q --whatprovides "$p" >/dev/null 2>&1 || echo "$p"; done; }
@@ -152,6 +161,7 @@ if (( ${#hwdec[@]} )); then
         sudo dnf install -y \
             "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$fedora.noarch.rpm" \
             "https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$fedora.noarch.rpm"
+        rpmfusion_exclude_nvidia
     fi
     if [[ " ${hwdec[*]} " == *" amd "* ]]; then
         if rpm -q mesa-va-drivers >/dev/null 2>&1; then
@@ -201,11 +211,8 @@ if [[ -n "$nvidia_gpu" ]] && ! modinfo nvidia >/dev/null 2>&1; then
     if ! has_repo "cuda-fedora$fedora-x86_64"; then
         sudo dnf config-manager addrepo --from-repofile="https://developer.download.nvidia.com/compute/cuda/repos/fedora$fedora/x86_64/cuda-fedora$fedora.repo"
     fi
-    # RPM Fusion nonfree (enabled above for AMD/Intel video decoding) has its own NVIDIA
-    # packages; on a machine with both GPUs they would clash with NVIDIA's
-    for r in rpmfusion-nonfree rpmfusion-nonfree-updates; do
-        if has_repo "$r"; then sudo dnf config-manager setopt "$r.excludepkgs=*nvidia*"; fi
-    done
+    # RPM Fusion nonfree has its own NVIDIA packages, which would clash with NVIDIA's
+    rpmfusion_exclude_nvidia
     # kernel-devel-matched/kernel-headers: what DKMS builds the module against (NVIDIA's guide);
     # the i686 libraries are for 32-bit games (Steam, Wine); libva-nvidia-driver (Fedora) gives
     # hardware video decoding through VA-API; mokutil checks Secure Boot

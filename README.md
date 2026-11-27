@@ -190,8 +190,10 @@ with prebuilt modules), so there this is skipped.
   nova-core and sets suspend/resume (`PreserveVideoMemoryAllocations=1`,
   `UseKernelSuspendNotifiers=1`, `TemporaryFilePath=/var/tmp`), and `nvidia-drm` already
   defaults to `modeset=1` and `fbdev=1`.
-- If RPM Fusion nonfree is enabled (AMD/Intel video decoding on a hybrid laptop), its NVIDIA
-  packages are excluded so they don't clash with NVIDIA's.
+- The driver comes only from NVIDIA's repo: whenever `setup.sh` enables RPM Fusion (AMD/Intel
+  video decoding) or installs the NVIDIA driver, it excludes RPM Fusion nonfree's NVIDIA
+  packages (`excludepkgs=*nvidia*`), so they can't clash, e.g. on a hybrid laptop. An RPM
+  Fusion configured by something else (Nobara) is left alone.
 - Secure Boot: DKMS signs the module with its own key (`/var/lib/dkms/mok.pub`); if Secure
   Boot is on and the key isn't enrolled, `setup.sh` runs `mokutil --import` (asks for a
   one-time password) and at the next reboot you pick *Enroll MOK > Continue > Yes* on the
