@@ -101,6 +101,7 @@ set up it does not ask for sudo:
 | Fedora: apps | `gnome-disk-utility` (GNOME Disks: partitions, formatting, SMART, disk images), `baobab` (Disk Usage Analyzer), `gnome-boxes` (virtual machines; pulls QEMU/KVM and libvirt, a couple of GB), `loupe` (Image Viewer), `papers` (Document Viewer), `decibels` (Audio Player), `showtime` (Video Player), `snapshot` (Camera), `gnome-calculator`. Loupe, Papers, Decibels and Showtime are set as the default apps for every file type they declare (`xdg-mime`) |
 | Fedora: app stores | `flatpak` (with the [Flathub](https://flathub.org) remote, added by `restore.sh`), `gnome-software` (GNOME Software: dnf and Flatpak apps) |
 | [Microsoft's repo](https://code.visualstudio.com/docs/setup/linux) (`/etc/yum.repos.d/vscode.repo`, set up by `restore.sh` with its signing key) | `code` (VS Code) |
+| Fedora: Wine | `wine` (Fedora's build, with its 32-bit libraries; about 1 GB), `winetricks` |
 | Fedora: codecs | `gstreamer1-plugins-good`, `gstreamer1-plugins-bad-free`, `gstreamer1-plugins-ugly-free`, `gstreamer1-plugin-libav`, `gstreamer1-plugin-openh264` (Fedora's Cisco repo, enabled if needed), `gstreamer1-plugin-dav1d`, `ffmpeg-free`: what Fedora ships without RPM Fusion; installed with `--skip-unavailable` |
 | [`duxlabs/dux-repo`](https://copr.fedorainfracloud.org/coprs/duxlabs/dux-repo/) COPR | `dux-edit` (text editor, `dedit`) |
 | Flathub | Zen Browser (`app.zen_browser.zen`, system-wide), set as the default browser with `xdg-mime` |

@@ -35,6 +35,8 @@ PACKAGES+=(dux-files gnome-disk-utility baobab gnome-boxes)
 PACKAGES+=(loupe papers decibels showtime snapshot gnome-calculator)
 # dux-edit: text editor from Dux Labs (dedit), for quick edits outside VS Code
 PACKAGES+=(dux-edit)
+# Wine (Fedora's build; pulls the 32-bit libraries for older Windows apps) and winetricks
+PACKAGES+=(wine winetricks)
 # Codecs for the GStreamer apps (Showtime, Decibels...): what Fedora ships without RPM Fusion.
 # openh264 comes from Fedora's Cisco repo; installed apart with --skip-unavailable so a
 # missing one doesn't stop the rest
