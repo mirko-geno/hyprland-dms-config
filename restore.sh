@@ -46,10 +46,9 @@ PACKAGES+=(winetricks)
 # missing one doesn't stop the rest
 CODECS=(gstreamer1-plugins-good gstreamer1-plugins-bad-free gstreamer1-plugins-ugly-free
     gstreamer1-plugin-libav gstreamer1-plugin-openh264 gstreamer1-plugin-dav1d ffmpeg-free)
-# Flatpak with Flathub (remote added below) and GNOME Software as the app store (its flatpak
-# plugin is built in; it talks to dnf through dnf5daemon, started on demand over D-Bus).
+# Flatpak with Flathub (remote and apps added below).
 # code: VS Code from Microsoft's repo (set up below, before installing)
-PACKAGES+=(flatpak gnome-software code)
+PACKAGES+=(flatpak code)
 # claude-code: Claude Code (claude) from Anthropic's repo (set up below, before installing);
 # in /usr/bin, so fish finds it, and updated with dnf. Log in the first time you run claude.
 PACKAGES+=(claude-code)
@@ -167,15 +166,21 @@ if (( ${#hwdec[@]} )); then
     fi
 fi
 
-# Flathub, for Flatpak apps (from GNOME Software or `flatpak install flathub <app>`)
+# Flathub, for Flatpak apps (from Bazaar or `flatpak install flathub <app>`)
 if ! flatpak remotes --system --columns=name | grep -qx flathub; then
     echo "Adding the Flathub remote (needs sudo)"
     sudo flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 fi
-# Zen Browser (Flatpak from Flathub, system-wide like on the desktop)
-if ! flatpak info --system app.zen_browser.zen >/dev/null 2>&1; then
-    echo "Installing Zen Browser from Flathub (needs sudo)"
-    sudo flatpak install -y --noninteractive flathub app.zen_browser.zen
+# Flatpak apps from Flathub, system-wide like on the desktop: Zen Browser and Bazaar (a fast,
+# Flatpak-only app store; the system itself is updated with dnf)
+FLATPAKS=(app.zen_browser.zen io.github.kolunmi.Bazaar)
+need_flatpaks=()
+for app in "${FLATPAKS[@]}"; do
+    flatpak info --system "$app" >/dev/null 2>&1 || need_flatpaks+=("$app")
+done
+if (( ${#need_flatpaks[@]} )); then
+    echo "Installing ${need_flatpaks[*]} from Flathub (needs sudo)"
+    sudo flatpak install -y --noninteractive flathub "${need_flatpaks[@]}"
 fi
 
 # Bluetooth is not enabled on a minimal install
