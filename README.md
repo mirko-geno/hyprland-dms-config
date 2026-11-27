@@ -107,6 +107,11 @@ set up it does not ask for sudo:
   package), which indexes the home folder. Its user service ships disabled, so `restore.sh`
   enables `dsearch.service`; without it the search returns nothing. The first index takes a
   while after login.
+- Icon theme: `restore.sh` sets `org.gnome.desktop.interface icon-theme` (gsettings) to the
+  theme in the DMS settings (Sweet-Red). DMS applies the theme through gsettings and, at
+  startup, compares it with the theme it applied last (`session.json`); on a fresh system
+  gsettings still says Adwaita, so DMS took it for an outside change and switched to the
+  default icons.
 - Run it from a graphical session (it uses `systemctl --user`).
 
 Manual equivalent of the package part:
