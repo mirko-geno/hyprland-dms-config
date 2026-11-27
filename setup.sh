@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Sets up Hyprland + DMS from this folder, also on a fresh Fedora install (Workstation or a
 # minimal install): installs the missing packages (DMS, Hyprland, Alacritty, fish, plus the
-# desktop basics a minimal install lacks: graphics, audio, fonts, login screen...), then
-# restores the saved config.
+# desktop basics a minimal install lacks: graphics, audio, fonts, login screen, and the
+# NVIDIA driver when there is an NVIDIA GPU...), then restores the saved config.
 # Before overwriting anything, it backs up the current config to ~/.config-backups/<date>.
 set -euo pipefail
 
@@ -181,6 +181,53 @@ done
 if (( ${#need_flatpaks[@]} )); then
     echo "Installing ${need_flatpaks[*]} from Flathub (needs sudo)"
     sudo flatpak install -y --noninteractive flathub "${need_flatpaks[@]}"
+fi
+
+# NVIDIA driver, when there is an NVIDIA GPU and no NVIDIA driver yet (Nobara ships its own,
+# which is kept). From NVIDIA's official repo: the vendor's own packages, no third-party
+# patches. nvidia-open is the full driver with the open kernel module (what NVIDIA uses for
+# Turing/RTX 20 and newer), built by DKMS for each kernel; it includes nvidia-smi
+# (nvidia-driver-cuda) and nvidia-settings. Its nvidia-kmod-common blacklists nouveau and
+# nova-core and sets suspend/resume (video memory kept, kernel suspend notifiers); modeset and
+# fbdev are already on by default in the driver. The GPU is found on the PCI bus (vendor
+# 0x10de, display class 0x03), which works with no driver loaded and without lspci.
+nvidia_gpu=""
+for dev in /sys/bus/pci/devices/*; do
+    [[ "$(<"$dev/vendor")" == 0x10de && "$(<"$dev/class")" == 0x03* ]] && nvidia_gpu=1
+done
+if [[ -n "$nvidia_gpu" ]] && ! modinfo nvidia >/dev/null 2>&1; then
+    echo "Installing the NVIDIA driver from NVIDIA's repo (needs sudo)"
+    fedora="$(rpm -E %fedora)"
+    if ! has_repo "cuda-fedora$fedora-x86_64"; then
+        sudo dnf config-manager addrepo --from-repofile="https://developer.download.nvidia.com/compute/cuda/repos/fedora$fedora/x86_64/cuda-fedora$fedora.repo"
+    fi
+    # RPM Fusion nonfree (enabled above for AMD/Intel video decoding) has its own NVIDIA
+    # packages; on a machine with both GPUs they would clash with NVIDIA's
+    for r in rpmfusion-nonfree rpmfusion-nonfree-updates; do
+        if has_repo "$r"; then sudo dnf config-manager setopt "$r.excludepkgs=*nvidia*"; fi
+    done
+    # kernel-devel-matched/kernel-headers: what DKMS builds the module against (NVIDIA's guide);
+    # the i686 libraries are for 32-bit games (Steam, Wine); libva-nvidia-driver (Fedora) gives
+    # hardware video decoding through VA-API; mokutil checks Secure Boot
+    sudo dnf install -y kernel-devel-matched kernel-headers nvidia-open \
+        nvidia-driver-libs.i686 nvidia-driver-cuda-libs.i686 libva-nvidia-driver mokutil
+    # DKMS builds the module while installing; build it again if it isn't there
+    if ! modinfo nvidia >/dev/null 2>&1; then
+        sudo dkms autoinstall -k "$(uname -r)" || true
+    fi
+    if ! modinfo nvidia >/dev/null 2>&1; then
+        echo "The NVIDIA kernel module was not built for $(uname -r); see: sudo dkms status" >&2
+        exit 1
+    fi
+    # Secure Boot: DKMS signs the module with its own key, which the firmware must trust.
+    # mokutil asks for a one-time password, asked again on the blue "Enroll MOK" screen at reboot.
+    if mokutil --sb-state 2>/dev/null | grep -q enabled &&
+        ! mokutil --test-key /var/lib/dkms/mok.pub 2>/dev/null | grep -q "already enrolled"; then
+        echo "Secure Boot is on: enrolling the DKMS signing key (choose a one-time password)"
+        sudo mokutil --import /var/lib/dkms/mok.pub
+        echo "At the next reboot choose: Enroll MOK > Continue > Yes, and type that password" >&2
+    fi
+    echo "NVIDIA driver $(modinfo -F version nvidia) installed; reboot to load it (nouveau is in use until then)"
 fi
 
 # Bluetooth is not enabled on a minimal install

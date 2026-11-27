@@ -1,7 +1,7 @@
 # CLAUDE.md
 
 Hyprland 0.57 (Lua config) + DMS (DankMaterialShell) desktop on Nobara/Fedora 44, kept
-reproducible in this repo. `README.md` documents everything (keybinds, layout, restore);
+reproducible in this repo. `README.md` documents everything (keybinds, layout, setup);
 read the relevant section instead of rediscovering it.
 
 ## Working with the user
@@ -23,7 +23,7 @@ read the relevant section instead of rediscovering it.
 
 1. Validate: `Hyprland --verify-config` (must print `config ok`).
 2. `./backup.sh` (copies the live config into the repo).
-3. Update `README.md` (and `backup.sh` / `restore.sh` if new files are involved).
+3. Update `README.md` (and `backup.sh` / `setup.sh` if new files are involved).
 
 ## Pitfalls
 
@@ -53,8 +53,10 @@ read the relevant section instead of rediscovering it.
 
 ## Repo notes
 
-- Branch `fedora-minimal`: `restore.sh` support for a minimal Fedora install (not merged,
-  untested on a real minimal install).
+- `setup.sh` was `restore.sh` until the `fedora-minimal-nvidia` branch (it installs, then restores).
+- Branch `fedora-minimal`: `setup.sh` support for a minimal Fedora install (tested in a
+  Fedora 45 VM; not merged). Branch `fedora-minimal-nvidia` (from it): NVIDIA driver from
+  NVIDIA's official repo when an NVIDIA GPU is found (untested on real hardware).
 - `claude/` holds the old long session and the project memory. Start new sessions instead of
   resuming the old one: it is very large and expensive to resume.
 - Shared with `~/niri-dms-config` (the niri setup): `dms/`, `alacritty/`, `fish/`, `cursor/`,

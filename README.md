@@ -8,8 +8,8 @@ to be adapted for left-handed use like my niri setup
 
 ```
 backup.sh           # saves the current system config into this folder
-restore.sh          # installs what is missing (Hyprland, DMS, ...) and puts the config back
-hyprexpo.sh         # builds the hyprexpo overview plugin (run by restore.sh, and after Hyprland updates)
+setup.sh          # installs what is missing (Hyprland, DMS, ...) and puts the config back
+hyprexpo.sh         # builds the hyprexpo overview plugin (run by setup.sh, and after Hyprland updates)
 hypr/
 ├── hyprland.lua    # main Hyprland config (Lua, Hyprland 0.57+)
 ├── stack.lua       # custom "stack" layout + its binds (Super+Alt+T / Super+Alt+Space)
@@ -47,15 +47,15 @@ claude-code/
 # Save the current state (after changing something in Hyprland or DMS)
 ./backup.sh
 
-# Restore the saved config
-./restore.sh
+# Set up the system and restore the saved config
+./setup.sh
 dms restart
 ```
 
 - `backup.sh` replaces whatever is in this folder with the current system config.
   Only `*.lua` files are copied from `~/.config/hypr` (leftovers like `hyprland.lua.orig`
   are skipped).
-- `restore.sh`:
+- `setup.sh`:
   1. Installs the missing packages (see [Fresh install](#fresh-install)).
   2. Checks that the saved config is valid with `Hyprland --verify-config`
      (this also checks the files in `hypr/dms/`).
@@ -63,7 +63,7 @@ dms restart
   4. Copies everything, installs `fish`/`zoxide` if missing and makes fish the default shell.
 - Hyprland reloads its config on save (or `hyprctl reload`); DMS needs `dms restart`.
 - Profile picture: `backup.sh` saves the AccountsService icon (the one DMS and the DMS greeter
-  show) to `profile/avatar`; `restore.sh` sets it back with AccountsService's `SetIconFile`
+  show) to `profile/avatar`; `setup.sh` sets it back with AccountsService's `SetIconFile`
   over D-Bus (no password needed for your own picture).
 - Only the wallpapers in use are saved (the general one, light/dark and each monitor's from
   `session.json`), not the whole `~/.wallpapers` folder. On restore, each is copied to its
@@ -84,17 +84,17 @@ Works on a fresh **Fedora Workstation** or a **minimal Fedora install** (e.g. th
 sudo dnf install git     # a minimal install has no git
 git clone https://github.com/mirko-geno/hyprland-dms-config.git ~/hyprland-dms-config
 cd ~/hyprland-dms-config
-./restore.sh   # asks for sudo (packages, login screen) and your password (chsh to fish)
+./setup.sh   # asks for sudo (packages, login screen) and your password (chsh to fish)
 ```
 
 The repo is private: cloning over HTTPS asks for a GitHub username and a personal access
 token (or set up an SSH key first and use the `git@github.com:` URL).
 
-- Reboot: `restore.sh` sets up greetd with the DMS greeter (themed like the desktop) as the
+- Reboot: `setup.sh` sets up greetd with the DMS greeter (themed like the desktop) as the
   login screen, replacing GDM, SDDM or LightDM if the system had one, and makes the system
   boot to the graphical target. The greeter runs on Hyprland; pick the session there.
 
-`restore.sh` installs only the packages that are missing (checked by what they provide, so
+`setup.sh` installs only the packages that are missing (checked by what they provide, so
 replacements like `mesa-vulkan-drivers-freeworld` count), so on a system that is already
 set up it does not ask for sudo:
 
@@ -106,15 +106,16 @@ set up it does not ask for sudo:
 | Fedora | `alacritty`, `fish`, `zoxide`, `gcr`, `gnome-keyring`, `breeze-icon-theme`, `xdg-desktop-portal-gtk`, `lua-devel` and `make` (hyprexpo) (and `dnf5-plugins` for `dnf copr`) |
 | [`duxlabs/dux-repo`](https://copr.fedorainfracloud.org/coprs/duxlabs/dux-repo/) COPR | `dux-files` (file manager, `dfiles`), set as the default app for folders with `xdg-mime` |
 | Fedora: apps | `gnome-disk-utility` (GNOME Disks: partitions, formatting, SMART, disk images), `baobab` (Disk Usage Analyzer), `gnome-boxes` (virtual machines; pulls QEMU/KVM and libvirt, a couple of GB), `loupe` (Image Viewer), `papers` (Document Viewer), `decibels` (Audio Player), `showtime` (Video Player), `snapshot` (Camera), `gnome-calculator`. Loupe, Papers, Decibels and Showtime are set as the default apps for every file type they declare (`xdg-mime`) |
-| Fedora: Flatpak | `flatpak`, with the [Flathub](https://flathub.org) remote (system-wide, added by `restore.sh`) |
-| [Microsoft's repo](https://code.visualstudio.com/docs/setup/linux) (`/etc/yum.repos.d/vscode.repo`, set up by `restore.sh` with its signing key) | `code` (VS Code) |
+| Fedora: Flatpak | `flatpak`, with the [Flathub](https://flathub.org) remote (system-wide, added by `setup.sh`) |
+| [Microsoft's repo](https://code.visualstudio.com/docs/setup/linux) (`/etc/yum.repos.d/vscode.repo`, set up by `setup.sh` with its signing key) | `code` (VS Code) |
 | Fedora: Wine | `wine` (Fedora's build, with its 32-bit libraries; about 1 GB; skipped if a Wine is already installed, e.g. Nobara's `winehq-staging`, which conflicts with it), `winetricks` |
 | Fedora: codecs | `gstreamer1-plugins-good`, `gstreamer1-plugins-bad-free`, `gstreamer1-plugins-ugly-free`, `gstreamer1-plugin-libav`, `gstreamer1-plugin-openh264` (Fedora's Cisco repo, enabled if needed), `gstreamer1-plugin-dav1d`, `ffmpeg-free`: what Fedora ships without RPM Fusion; installed with `--skip-unavailable` |
 | [`duxlabs/dux-repo`](https://copr.fedorainfracloud.org/coprs/duxlabs/dux-repo/) COPR | `dux-edit` (text editor, `dedit`), `dux-calendar` (calendar, `dcal`; its reminders need it running: "Start at login" in its settings or `systemctl --user enable --now dcal`) |
 | Flathub (system-wide) | Zen Browser (`app.zen_browser.zen`), set as the default browser with `xdg-mime`; Bazaar (`io.github.kolunmi.Bazaar`), a fast Flatpak-only app store (the system is updated with `sudo dnf upgrade`) |
 | [RPM Fusion](https://rpmfusion.org) free and nonfree (only if the GPU is AMD or Intel) | Hardware video decoding with the patented codecs Fedora leaves out: `mesa-va-drivers-freeworld` (AMD, swapped for Fedora's `mesa-va-drivers`), `intel-media-driver` (Intel, replaces Fedora's `libva-intel-media-driver`). The GPU vendor is read from `/sys/class/drm/card*/device/vendor`; check it with `vainfo` |
-| [Anthropic's repo](https://downloads.claude.ai/claude-code/rpm/stable) (`/etc/yum.repos.d/claude-code.repo`, set up by `restore.sh` with its signing key) | `claude-code` (Claude Code, `/usr/bin/claude`, updated with dnf). Log in the first time you run `claude`; the login (`~/.claude/.credentials.json`) is never saved in the repo |
-| Fedora: desktop basics a minimal install lacks | graphics `mesa-dri-drivers`, `mesa-vulkan-drivers`; audio `pipewire`, `pipewire-pulseaudio`, `wireplumber`; battery `upower`; power profiles: `tuned-ppd` (Fedora's default) unless something already provides `ppd-service` (e.g. Nobara's `power-profiles-daemon`; the two conflict); `NetworkManager-wifi`, `bluez`; `polkit`, `xdg-utils`, `xdg-user-dirs`; `python3`, `git-core` (used by `restore.sh` and `hyprexpo.sh`), `libva-utils` (`vainfo`), `dconf` (stores gsettings, e.g. the icon theme); fonts `google-noto-sans-vf-fonts`, `google-noto-sans-mono-vf-fonts`, `google-noto-color-emoji-fonts`, `fira-code-fonts` (DMS monospace font); `greetd` (login screen) |
+| [Anthropic's repo](https://downloads.claude.ai/claude-code/rpm/stable) (`/etc/yum.repos.d/claude-code.repo`, set up by `setup.sh` with its signing key) | `claude-code` (Claude Code, `/usr/bin/claude`, updated with dnf). Log in the first time you run `claude`; the login (`~/.claude/.credentials.json`) is never saved in the repo |
+| [NVIDIA's repo](https://developer.download.nvidia.com/compute/cuda/repos/) (`cuda-fedora<version>-x86_64`, only with an NVIDIA GPU and no NVIDIA driver yet) | `nvidia-open` (driver, open kernel module built by DKMS, `nvidia-smi`, `nvidia-settings`), `nvidia-driver-libs.i686`, `nvidia-driver-cuda-libs.i686`, `kernel-devel-matched`, `kernel-headers`, `libva-nvidia-driver`, `mokutil`. See [NVIDIA](#nvidia) |
+| Fedora: desktop basics a minimal install lacks | graphics `mesa-dri-drivers`, `mesa-vulkan-drivers`; audio `pipewire`, `pipewire-pulseaudio`, `wireplumber`; battery `upower`; power profiles: `tuned-ppd` (Fedora's default) unless something already provides `ppd-service` (e.g. Nobara's `power-profiles-daemon`; the two conflict); `NetworkManager-wifi`, `bluez`; `polkit`, `xdg-utils`, `xdg-user-dirs`; `python3`, `git-core` (used by `setup.sh` and `hyprexpo.sh`), `libva-utils` (`vainfo`), `dconf` (stores gsettings, e.g. the icon theme); fonts `google-noto-sans-vf-fonts`, `google-noto-sans-mono-vf-fonts`, `google-noto-color-emoji-fonts`, `fira-code-fonts` (DMS monospace font); `greetd` (login screen) |
 
 - DMS comes from the Dux Labs COPRs. The older `avengemedia/dms` and `avengemedia/danklinux`
   COPRs are deprecated; `dms migrate dux` moves an existing install (only the repos change:
@@ -129,20 +130,20 @@ set up it does not ask for sudo:
   and can't offer to kill a frozen app.
 - The Hyprland COPR also ships `quickshell` and `matugen`; they are excluded from it
   (`excludepkgs`) so the versions DMS depends on are kept.
-- DMS runs as the `dms.service` systemd user service; `restore.sh` adds it to
+- DMS runs as the `dms.service` systemd user service; `setup.sh` adds it to
   `hyprland-session.target` (what `dms setup` does), so it starts with the Hyprland session.
 - DMS file search (typing `/name` in the launcher) asks the `dsearch` daemon (`dux-search`
-  package), which indexes the home folder. Its user service ships disabled, so `restore.sh`
+  package), which indexes the home folder. Its user service ships disabled, so `setup.sh`
   enables `dsearch.service`; without it the search returns nothing. The first index takes a
   while after login.
-- Icon theme: `restore.sh` sets `org.gnome.desktop.interface icon-theme` (gsettings) to the
+- Icon theme: `setup.sh` sets `org.gnome.desktop.interface icon-theme` (gsettings) to the
   theme in the DMS settings (Sweet-Red). DMS applies the theme through gsettings and, at
   startup, compares it with the theme it applied last (`session.json`); on a fresh system
   gsettings still says Adwaita, so DMS took it for an outside change and switched to the
   default icons.
 - Bluetooth (`bluetooth.service`) is enabled if it isn't.
 - Login screen (unless greetd already is the display manager, so re-runs skip it), the
-  very last step, so it only happens once everything else succeeded: `restore.sh` adds the
+  very last step, so it only happens once everything else succeeded: `setup.sh` adds the
   user to the `greeter` group (`dms-greeter sync` refuses to run otherwise), runs
   `dms-greeter sync` (through `sg greeter`, since the new group isn't active yet) to copy the
   DMS theme and wallpaper to the greeter, sets `graphical.target` as default and runs
@@ -151,9 +152,8 @@ set up it does not ask for sudo:
   gnome-keyring at login. Check it with `dms-greeter status`. To go back to GDM (from a TTY,
   Ctrl+Alt+F3, if the greeter doesn't start): `sudo systemctl disable greetd && sudo systemctl
   enable gdm`, then reboot.
-- NVIDIA GPUs need the proprietary driver from RPM Fusion, which is not handled here
-  (Intel/AMD work with Mesa).
-- Apart from the apps listed above, apps (browser, editor...) are not installed by `restore.sh`.
+- NVIDIA GPUs: see [NVIDIA](#nvidia) (Intel/AMD work with Mesa).
+- Apart from the apps listed above, apps (browser, editor...) are not installed by `setup.sh`.
 - Tested on a Fedora 45 minimal install in a VM (GNOME Boxes). Not testable there: hardware
   video decoding, Wi-Fi, Bluetooth and laptop specifics (battery, brightness, lid, touchpad).
 
@@ -171,6 +171,37 @@ systemctl --user add-wants hyprland-session.target dms.service
 systemctl --user enable --now dsearch.service
 ./hyprexpo.sh
 ```
+
+## NVIDIA
+
+When `setup.sh` finds an NVIDIA GPU (on the PCI bus: vendor `0x10de`, display class `0x03`,
+which works with no driver loaded and without `lspci`) and no NVIDIA kernel module
+(`modinfo nvidia`), it installs the driver from **NVIDIA's official repo**: the vendor's own
+packages, with no third-party patches. Nobara ships its own driver (negativo17's packaging,
+with prebuilt modules), so there this is skipped.
+
+- `nvidia-open`: the full driver with NVIDIA's open kernel module (what NVIDIA uses for
+  Turing/RTX 20 and newer; older GPUs are not supported by this branch), built by DKMS for
+  each kernel. It includes `nvidia-smi` (`nvidia-driver-cuda`) and `nvidia-settings`.
+- 32-bit libraries for games (`nvidia-driver-libs.i686`, `nvidia-driver-cuda-libs.i686`),
+  `kernel-devel-matched` and `kernel-headers` (what DKMS builds against, per NVIDIA's guide),
+  and `libva-nvidia-driver` (Fedora) for hardware video decoding.
+- No module options are set by hand: NVIDIA's `nvidia-kmod-common` blacklists nouveau and
+  nova-core and sets suspend/resume (`PreserveVideoMemoryAllocations=1`,
+  `UseKernelSuspendNotifiers=1`, `TemporaryFilePath=/var/tmp`), and `nvidia-drm` already
+  defaults to `modeset=1` and `fbdev=1`.
+- If RPM Fusion nonfree is enabled (AMD/Intel video decoding on a hybrid laptop), its NVIDIA
+  packages are excluded so they don't clash with NVIDIA's.
+- Secure Boot: DKMS signs the module with its own key (`/var/lib/dkms/mok.pub`); if Secure
+  Boot is on and the key isn't enrolled, `setup.sh` runs `mokutil --import` (asks for a
+  one-time password) and at the next reboot you pick *Enroll MOK > Continue > Yes* on the
+  blue screen and type it.
+- `setup.sh` checks that the module was built for the running kernel and stops if not
+  (`sudo dkms status` shows why). Reboot afterwards: nouveau stays loaded until then.
+- `hyprland.lua` sets `LIBVA_DRIVER_NAME=nvidia` and `NVD_BACKEND=direct` when the `nvidia`
+  module is loaded, for VA-API through `libva-nvidia-driver` (Hyprland wiki).
+- If a kernel update breaks the module, boot the previous kernel from the boot menu (Fedora
+  keeps the last ones) and rebuild with `sudo dkms autoinstall` once NVIDIA ships a fix.
 
 ## How DMS is started
 
@@ -259,7 +290,7 @@ landscape monitors, rows on portrait ones. Each cell is tiled like dwindle.
   (inside the cell first, then between cells). Floating windows keep the DMS stock resize
   bind. Stacking or closing a cell goes back to equal cells; split ratios stay.
 - The drag timer is created on first use: creating an `hl.timer` while the config loads
-  crashes `Hyprland --verify-config`, which `restore.sh` runs.
+  crashes `Hyprland --verify-config`, which `setup.sh` runs.
 - Generic `window.move` / `window.swap` don't reach Lua layouts, so moving goes through the
   layout message `move l|r|u|d` (`hl.dsp.layout("move l")`). Ties between equally close
   windows go to the most aligned one, then the most recently focused.
@@ -298,7 +329,7 @@ between tiles. Settings and bind are in `hypr/hyprexpo.lua`.
 The plugin is not managed by `hyprpm`: `hyprexpo.sh` builds it against `hyprland-devel`
 from the Hyprland COPR (exact match for the installed Hyprland, no headers to build, no
 `sudo` for `hyprpm`) and installs it to `~/.local/lib/hyprexpo/hyprexpo.so`, which
-`hyprexpo.lua` loads with `hl.plugin.load`. `restore.sh` runs it (and installs
+`hyprexpo.lua` loads with `hl.plugin.load`. `setup.sh` runs it (and installs
 `hyprland-devel`, `lua-devel` and `make`). After a Hyprland update:
 
 ```sh
@@ -320,7 +351,7 @@ sudo dnf upgrade hyprland hyprland-devel   # both must be the same version
   session still runs the old binary, so it only loads on the next login.
 - On Nobara, the `terra` repo ships a newer `glaze-devel` (9.x) without the `glaze-static`
   that `hyprland-devel` requires (the COPR's 8.x has it), which blocks system updates.
-  `restore.sh` excludes it from terra (added to terra's own exclude list, Nobara's entries
+  `setup.sh` excludes it from terra (added to terra's own exclude list, Nobara's entries
   stay): `sudo dnf config-manager setopt terra.excludepkgs=glaze-devel`.
 - It is installed with `install`, never `cp`: writing over a loaded `.so` crashes Hyprland.
 - Lua: the fork requires Lua 5.5 (what upstream Hyprland 0.57 uses), but the COPR builds
@@ -364,7 +395,7 @@ The portal reads `xdph.conf` on start:
 Uses `gcr-ssh-agent` (from GNOME's `gcr`, works without the GNOME session): the SSH key
 passphrase is asked once per session in a popup.
 
-- `systemctl --user enable --now gcr-ssh-agent.socket` (done by `restore.sh`).
+- `systemctl --user enable --now gcr-ssh-agent.socket` (done by `setup.sh`).
 - `~/.config/environment.d/90-ssh-agent.conf` sets `SSH_AUTH_SOCK=${XDG_RUNTIME_DIR}/gcr/ssh`.
 - `hyprland.lua` sets `SSH_AUTH_SOCK` too (`hl.env`): only display managers that import the
   systemd environment (GDM) pass `environment.d` to the session; greetd (the DMS greeter)
@@ -375,7 +406,7 @@ passphrase is asked once per session in a popup.
 ## Claude Code session
 
 `claude/` holds the Claude Code session where this setup was built, plus its memory.
-`restore.sh` puts them back in `~/.claude/projects/<repo path with "-">/`, so the
+`setup.sh` puts them back in `~/.claude/projects/<repo path with "-">/`, so the
 session can be resumed from the repo folder:
 
 ```sh

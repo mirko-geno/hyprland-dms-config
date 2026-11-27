@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Builds the hyprexpo workspace overview plugin (github.com/sandwichfarm/hyprexpo) for the
 # installed Hyprland and installs it to ~/.local/lib/hyprexpo, where hypr/hyprexpo.lua loads it.
-# Run by restore.sh; run it again after every Hyprland update.
+# Run by setup.sh; run it again after every Hyprland update.
 # Needs hyprland-devel (same version as hyprland) and lua-devel.
 set -euo pipefail
 

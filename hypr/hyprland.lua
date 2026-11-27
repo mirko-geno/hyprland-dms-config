@@ -5,6 +5,15 @@
 -- greetd doesn't. Set before the startup hook, which exports it to systemd and D-Bus.
 hl.env("SSH_AUTH_SOCK", os.getenv("XDG_RUNTIME_DIR") .. "/gcr/ssh")
 
+-- NVIDIA (only when its kernel module is loaded): hardware video decoding through VA-API with
+-- libva-nvidia-driver (browsers, video players), as the Hyprland wiki recommends
+local nvidia = io.open("/sys/module/nvidia/version")
+if nvidia then
+	nvidia:close()
+	hl.env("LIBVA_DRIVER_NAME", "nvidia")
+	hl.env("NVD_BACKEND", "direct")
+end
+
 -- DMS_STARTUP_BEGIN
 hl.on("hyprland.start", function()
 	hl.exec_cmd("dbus-update-activation-environment --systemd --all")

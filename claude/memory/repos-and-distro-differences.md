@@ -26,4 +26,9 @@ script only adds a glaze-devel exclude when terra exists). dnf5 `repo info X` ex
 unknown repos: use `dnf repo list --all` (restore.sh `has_repo`). Conflicting alternatives:
 require the capability, not a package name (power profiles: Fedora 41+ ships tuned-ppd, Nobara
 power-profiles-daemon, both provide ppd-service and conflict; Wine: Nobara's winehq-staging
-conflicts with Fedora's wine). See [[hyprland-dms-setup]].
+conflicts with Fedora's wine). NVIDIA (2026-11-27, branch fedora-minimal-nvidia): user chose
+NVIDIA's official repo (cuda-fedora<ver>, nvidia-open + DKMS) as the "purest" option over
+RPM Fusion and negativo17; Nobara itself builds from negativo17's specs (Nobara-Project/
+rpm-sources) and ships prebuilt modules. Package names like xorg-x11-drv-* bothered the user
+(legacy names): verify by opening packages, never claim versions from search snippets (I once
+said RPM Fusion lagged at 595; it had 620 in updates). See [[hyprland-dms-setup]].
