@@ -41,6 +41,11 @@ if (( ${#need[@]} + ${#need_hypr[@]} )); then
     sudo dnf copr enable -y "$HYPR_COPR"
     # The Hyprland COPR also ships quickshell and matugen; keep the versions DMS depends on
     sudo dnf config-manager setopt "$HYPR_REPO_ID.excludepkgs=quickshell,matugen"
+    # Nobara's terra repo ships a newer glaze-devel that doesn't provide glaze-static, which
+    # hyprland-devel needs (from the Hyprland COPR); this adds to terra's own exclude list
+    if dnf -q repo info terra >/dev/null 2>&1; then
+        sudo dnf config-manager setopt "terra.excludepkgs=glaze-devel"
+    fi
     if (( ${#need[@]} )); then sudo dnf install -y "${need[@]}"; fi
     if (( ${#need_hypr[@]} )); then
         sudo dnf install -y --setopt=install_weak_deps=False "${need_hypr[@]}"

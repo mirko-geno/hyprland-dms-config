@@ -8,6 +8,8 @@
   "monitorWallpaperFillModes": {
     "HDMI-A-1": "Fill"
   },
+  "weatherLocation": "Vicente López, Buenos Aires",
+  "weatherCoordinates": "-34.5257630,-58.4748977",
   "lockScreenAutoPositions": {
     "DP-1": {
       "width": 1920,
@@ -70,7 +72,7 @@
   "recentColors": [
     "#ff0005"
   ],
-  "lastPlayerIdentity": "Spotify",
+  "lastPlayerIdentity": "Mozilla zen",
   "niriOutputSettings": {
     "DP-1": {}
   },
@@ -87,19 +89,30 @@
   },
   "lastAppliedIconTheme": "Sweet-Red",
   "launcherQueryHistory": [
+    "zen",
+    "dms",
+    "nobara",
+    "update",
+    "obs",
+    "vesk",
+    "z",
+    "spotif",
+    "wha",
+    "zap",
+    "code",
+    "spoti",
+    "z1",
+    "steam",
+    "setting",
+    "settings",
     "/OIP",
     "files",
     "spoi",
-    "zap",
-    "zen",
-    "obs",
     "/images",
-    "spoti",
     "ve",
     "/Grupos y módulos",
     "spori",
     "mixer",
-    "steam",
     "vscod",
     "vsk",
     "in",
@@ -110,12 +123,10 @@
     "/oip",
     "calc",
     "versk",
-    "spotif",
     "pdf",
     "fil",
     "vsco",
     "missi",
-    "z",
     "flat",
     "bo",
     "box",
@@ -125,18 +136,9 @@
     "fas",
     "spo",
     "soitu",
-    "vesk",
     "edit",
     "file",
-    "fast",
-    "ze",
-    "vsc",
-    "vs",
-    "miss",
-    "tex",
-    "clocs",
-    "wha",
-    "fire"
+    "fast"
   ],
   "niriOverviewLastMode": "all",
   "configVersion": 7

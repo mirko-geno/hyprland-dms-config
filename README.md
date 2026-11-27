@@ -106,6 +106,7 @@ Manual equivalent of the package part:
 sudo dnf copr enable avengemedia/dms
 sudo dnf copr enable lionheartp/Hyprland
 sudo dnf config-manager setopt "copr:copr.fedorainfracloud.org:lionheartp:Hyprland.excludepkgs=quickshell,matugen"
+sudo dnf config-manager setopt terra.excludepkgs=glaze-devel   # Nobara only (see Workspace overview)
 sudo dnf install dms danksearch matugen dgop alacritty fish zoxide gcr gnome-keyring breeze-icon-theme xdg-desktop-portal-gtk lua-devel make
 sudo dnf install --setopt=install_weak_deps=False hyprland xdg-desktop-portal-hyprland hyprland-devel
 systemctl --user add-wants hyprland-session.target dms.service
@@ -249,11 +250,18 @@ sudo dnf upgrade hyprland hyprland-devel   # both must be the same version
   the installed `Hyprland`, and builds the plugin commit the fork pins for it in
   `hyprpm.toml`. It doesn't build anything when there is no pin yet for a new Hyprland
   version (try again later).
-- It does nothing if the plugin is already built for the installed Hyprland (the commit is
-  saved in `~/.local/lib/hyprexpo/hyprland-commit`); `./hyprexpo.sh --force` rebuilds anyway.
-  Building takes about 2 minutes.
-- If the running Hyprland is the one it built for, it loads the new plugin right away and
-  reloads the config (the stack layout re-tiles open windows).
+- It does nothing if the plugin is already built for the installed Hyprland package (its
+  version-release is saved in `~/.local/lib/hyprexpo/hyprland-build`); `./hyprexpo.sh --force`
+  rebuilds anyway. Building takes about 2 minutes. The package release counts, not only the
+  commit: the COPR rebuilds the same Hyprland commit against new libraries (e.g. `0.57.2-2`,
+  against `hyprgraphics` 0.7), and a plugin built for the old build doesn't load.
+- If the running Hyprland is the installed binary, it loads the new plugin right away and
+  reloads the config (the stack layout re-tiles open windows). Right after an update the
+  session still runs the old binary, so it only loads on the next login.
+- On Nobara, the `terra` repo ships a newer `glaze-devel` (9.x) without the `glaze-static`
+  that `hyprland-devel` requires (the COPR's 8.x has it), which blocks system updates.
+  `restore.sh` excludes it from terra (added to terra's own exclude list, Nobara's entries
+  stay): `sudo dnf config-manager setopt terra.excludepkgs=glaze-devel`.
 - It is installed with `install`, never `cp`: writing over a loaded `.so` crashes Hyprland.
 - Lua: the fork requires Lua 5.5 (what upstream Hyprland 0.57 uses), but the COPR builds
   Hyprland against Fedora's Lua 5.4, and the plugin must use the same Lua as Hyprland. The

@@ -7,22 +7,24 @@ set -euo pipefail
 
 REPO_URL="https://github.com/sandwichfarm/hyprexpo"
 DEST="$HOME/.local/lib/hyprexpo/hyprexpo.so"
-# Hyprland commit the installed plugin was built for (skips rebuilding; --force rebuilds anyway)
-STAMP="$HOME/.local/lib/hyprexpo/hyprland-commit"
+# Hyprland build the installed plugin was built for (skips rebuilding; --force rebuilds anyway)
+STAMP="$HOME/.local/lib/hyprexpo/hyprland-build"
 HEADER="/usr/include/hyprland/src/version.h"
 
 [[ -f "$HEADER" ]] || { echo "hyprexpo: hyprland-devel is not installed" >&2; exit 1; }
 
-# The plugin must be built against the exact Hyprland revision it runs in
-commit="$(sed -n 's/^#define GIT_COMMIT_HASH *"\(.*\)"/\1/p' "$HEADER")"
-installed="$(Hyprland --version | sed -n 's/.* at commit \([0-9a-f]*\).*/\1/p' | head -1)"
-if [[ "$commit" != "$installed" ]]; then
-    echo "hyprexpo: hyprland-devel ($commit) doesn't match the installed Hyprland ($installed);" \
+# The plugin must be built against the exact Hyprland build it runs in: same package release,
+# not only the same commit (a COPR rebuild against new libraries keeps the commit)
+build="$(rpm -q --qf '%{version}-%{release}' hyprland)"
+devel="$(rpm -q --qf '%{version}-%{release}' hyprland-devel)"
+if [[ "$build" != "$devel" ]]; then
+    echo "hyprexpo: hyprland-devel ($devel) doesn't match the installed Hyprland ($build);" \
         "update both: sudo dnf upgrade hyprland hyprland-devel" >&2
     exit 1
 fi
+commit="$(sed -n 's/^#define GIT_COMMIT_HASH *"\(.*\)"/\1/p' "$HEADER")"
 
-if [[ "${1:-}" != "--force" && -f "$DEST" && "$(cat "$STAMP" 2>/dev/null)" == "$commit" ]]; then
+if [[ "${1:-}" != "--force" && -f "$DEST" && "$(cat "$STAMP" 2>/dev/null)" == "$build" ]]; then
     echo "hyprexpo is already built for this Hyprland"
     exit 0
 fi
@@ -54,11 +56,13 @@ echo "Building hyprexpo ${pin:0:7} for Hyprland $(pkg-config --modversion hyprla
 make -C "$src" -o check-lua LUA_PKG_CONFIG=lua -j"$(nproc)" hyprexpo.so >/dev/null
 # install replaces the file instead of writing into it: overwriting a loaded .so crashes Hyprland
 install -Dm755 "$src/hyprexpo.so" "$DEST"
-echo "$commit" > "$STAMP"
+echo "$build" > "$STAMP"
 echo "Installed $DEST"
 
-# Load it now if the running Hyprland is the installed one (after an update it isn't until re-login)
-if [[ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]] && hyprctl version 2>/dev/null | grep -q "$commit"; then
+# Load it now if the running Hyprland is the installed binary. After an update the session still
+# runs the old, replaced one ("/usr/bin/Hyprland (deleted)") until re-login, even with the same commit.
+running="$(readlink "/proc/$(pidof -s Hyprland)/exe" 2>/dev/null || true)"
+if [[ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" && "$running" == "$(readlink -f "$(command -v Hyprland)")" ]]; then
     hyprctl plugin unload "$DEST" >/dev/null 2>&1 || true
     hyprctl plugin load "$DEST" >/dev/null && hyprctl reload >/dev/null && echo "Loaded in the running Hyprland"
 else

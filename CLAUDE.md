@@ -47,7 +47,8 @@ read the relevant section instead of rediscovering it.
 - `hyprctl repl 'return ...'` evaluates Lua in the running compositor (useful for checks).
 - `hyprctl binds` shows `arg` as an internal index, not the command.
 - After a Hyprland update the hyprexpo plugin must be rebuilt (`./hyprexpo.sh`, needs
-  `hyprland-devel` of the same version); until then Super+Tab falls back to the DMS overview.
+  `hyprland-devel` of the same version-release); until then Super+Tab falls back to the DMS
+  overview. On Nobara, terra's `glaze-devel` must stay excluded (README "Workspace overview").
 - Docker (when started) blocks VM networking via iptables FORWARD DROP.
 
 ## Repo notes
