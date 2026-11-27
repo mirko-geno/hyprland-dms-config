@@ -49,8 +49,9 @@ PACKAGES+=(flatpak gnome-software code)
 # Desktop basics that Fedora Workstation has and a minimal install doesn't:
 # graphics (Intel/AMD; NVIDIA needs RPM Fusion), audio (DMS volume uses PipeWire), battery and
 # power profiles, Wi-Fi and Bluetooth, fonts (DMS uses Fira Code as monospace), xdg tools,
-# python3 (reads session.json below), git (hyprexpo.sh clones the plugin), libva-utils (vainfo)
-PACKAGES+=(python3 git-core libva-utils mesa-dri-drivers mesa-vulkan-drivers
+# python3 (reads session.json below), git (hyprexpo.sh clones the plugin), libva-utils (vainfo),
+# dconf (stores gsettings; without it settings like the icon theme are lost)
+PACKAGES+=(python3 git-core libva-utils dconf mesa-dri-drivers mesa-vulkan-drivers
     pipewire pipewire-pulseaudio wireplumber
     upower power-profiles-daemon NetworkManager-wifi bluez polkit xdg-utils xdg-user-dirs
     google-noto-sans-vf-fonts google-noto-sans-mono-vf-fonts google-noto-color-emoji-fonts
