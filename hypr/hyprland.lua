@@ -1,5 +1,10 @@
 -- Hyprland configuration (Lua) — https://wiki.hypr.land/configuring/
 
+-- SSH agent (gcr-ssh-agent, unlocked with the login keyring). environment.d sets it too, but
+-- only display managers that import the systemd environment (GDM) pass it to the session;
+-- greetd doesn't. Set before the startup hook, which exports it to systemd and D-Bus.
+hl.env("SSH_AUTH_SOCK", os.getenv("XDG_RUNTIME_DIR") .. "/gcr/ssh")
+
 -- DMS_STARTUP_BEGIN
 hl.on("hyprland.start", function()
 	hl.exec_cmd("dbus-update-activation-environment --systemd --all")
