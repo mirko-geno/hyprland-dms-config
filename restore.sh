@@ -33,6 +33,13 @@ PACKAGES+=(dux-files gnome-disk-utility baobab gnome-boxes)
 # More GNOME apps: loupe (Image Viewer), papers (Document Viewer: PDF...), decibels (Audio
 # Player), showtime (Video Player), snapshot (Camera), gnome-calculator
 PACKAGES+=(loupe papers decibels showtime snapshot gnome-calculator)
+# dux-edit: text editor from Dux Labs (dedit), for quick edits outside VS Code
+PACKAGES+=(dux-edit)
+# Codecs for the GStreamer apps (Showtime, Decibels...): what Fedora ships without RPM Fusion.
+# openh264 comes from Fedora's Cisco repo; installed apart with --skip-unavailable so a
+# missing one doesn't stop the rest
+CODECS=(gstreamer1-plugins-good gstreamer1-plugins-bad-free gstreamer1-plugins-ugly-free
+    gstreamer1-plugin-libav gstreamer1-plugin-openh264 gstreamer1-plugin-dav1d ffmpeg-free)
 # Flatpak with Flathub (remote added below) and GNOME Software as the app store (its flatpak
 # plugin is built in; it talks to dnf through dnf5daemon, started on demand over D-Bus).
 # code: VS Code from Microsoft's repo (set up below, before installing)
@@ -64,6 +71,7 @@ HYPR_PACKAGES=(hyprland xdg-desktop-portal-hyprland hyprland-guiutils hyprland-d
 missing() { for p in "$@"; do rpm -q --whatprovides "$p" >/dev/null 2>&1 || echo "$p"; done; }
 mapfile -t need < <(missing "${PACKAGES[@]}")
 mapfile -t need_hypr < <(missing "${HYPR_PACKAGES[@]}")
+mapfile -t need_codecs < <(missing "${CODECS[@]}")
 # hyprland-devel must be the same version as an already installed hyprland
 if rpm -q hyprland >/dev/null 2>&1; then
     need_hypr=("${need_hypr[@]/#hyprland-devel/hyprland-devel-$(rpm -q --qf '%{version}-%{release}' hyprland)}")
@@ -95,11 +103,23 @@ if (( ${#need[@]} + ${#need_hypr[@]} )); then
         sudo dnf install -y --setopt=install_weak_deps=False "${need_hypr[@]}"
     fi
 fi
+if (( ${#need_codecs[@]} )); then
+    echo "Installing codecs: ${need_codecs[*]} (needs sudo)"
+    if dnf -q repo info --all fedora-cisco-openh264 >/dev/null 2>&1; then
+        sudo dnf config-manager setopt fedora-cisco-openh264.enabled=1
+    fi
+    sudo dnf install -y --skip-unavailable "${need_codecs[@]}"
+fi
 
 # Flathub, for Flatpak apps (from GNOME Software or `flatpak install flathub <app>`)
 if ! flatpak remotes --system --columns=name | grep -qx flathub; then
     echo "Adding the Flathub remote (needs sudo)"
     sudo flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+fi
+# Zen Browser (Flatpak from Flathub, system-wide like on the desktop)
+if ! flatpak info --system app.zen_browser.zen >/dev/null 2>&1; then
+    echo "Installing Zen Browser from Flathub (needs sudo)"
+    sudo flatpak install -y --noninteractive flathub app.zen_browser.zen
 fi
 
 # Bluetooth is not enabled on a minimal install
@@ -217,6 +237,11 @@ xdg-user-dirs-update
 
 # Dux Files opens folders (xdg-open, "show in folder" from apps); saved in ~/.config/mimeapps.list
 xdg-mime default dev.duxlabs.files.desktop inode/directory
+# Zen opens web links and HTML files
+if [[ -f /var/lib/flatpak/exports/share/applications/app.zen_browser.zen.desktop ]]; then
+    xdg-mime default app.zen_browser.zen.desktop x-scheme-handler/http x-scheme-handler/https \
+        text/html application/xhtml+xml
+fi
 # Default apps for images, documents, audio and video: every type each app declares
 for app in org.gnome.Loupe org.gnome.Papers org.gnome.Decibels org.gnome.Showtime; do
     f="/usr/share/applications/$app.desktop"
