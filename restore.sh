@@ -264,12 +264,10 @@ fi
 if [[ -f "$REPO/profile/avatar" ]]; then
     user_obj="/org/freedesktop/Accounts/User$(id -u)"
     busctl call org.freedesktop.Accounts "$user_obj" org.freedesktop.Accounts.User \
-        SetIconFile s "$REPO/profile/avatar" || true
+        SetIconFile s "$REPO/profile/avatar" >/dev/null 2>&1 || true
     icon="$(busctl get-property org.freedesktop.Accounts "$user_obj" \
         org.freedesktop.Accounts.User IconFile 2>/dev/null | sed -n 's/^s "\(.*\)"$/\1/p')"
-    if [[ -n "$icon" ]] && cmp -s "$icon" "$REPO/profile/avatar"; then
-        echo "Profile picture set ($icon); restart DMS (dms restart) if it is running to see it"
-    else
+    if [[ -z "$icon" ]] || ! cmp -s "$icon" "$REPO/profile/avatar"; then
         echo "Could not set the profile picture (AccountsService has: ${icon:-none})" >&2
     fi
 fi
