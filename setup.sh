@@ -214,9 +214,32 @@ for dev in /sys/bus/pci/devices/*; do
 done
 if [[ -n "$nvidia_gpu" ]] && ! modinfo nvidia >/dev/null 2>&1; then
     echo "Installing the NVIDIA driver from NVIDIA's repo (needs sudo)"
+    # NVIDIA publishes a new Fedora's repo before putting the driver in it (fedora45 had only
+    # datacenter tools at first): use the newest repo, from this Fedora down to two releases
+    # back, that has nvidia-open. The previous release's packages install fine on the new one,
+    # since DKMS builds the module for the running Fedora's kernel.
     fedora="$(rpm -E %fedora)"
-    if ! has_repo "cuda-fedora$fedora-x86_64"; then
-        sudo dnf config-manager addrepo --from-repofile="https://developer.download.nvidia.com/compute/cuda/repos/fedora$fedora/x86_64/cuda-fedora$fedora.repo"
+    nv_base="https://developer.download.nvidia.com/compute/cuda/repos"
+    nv_fedora=""
+    for v in "$fedora" $((fedora - 1)) $((fedora - 2)); do
+        if dnf -q repoquery --disablerepo='*' --repofrompath="nvcheck,$nv_base/fedora$v/x86_64" \
+            --setopt=nvcheck.gpgcheck=0 nvidia-open 2>/dev/null | grep -q .; then
+            nv_fedora="$v"
+            break
+        fi
+    done
+    if [[ -z "$nv_fedora" ]]; then
+        echo "NVIDIA's repo has no driver for Fedora $fedora (nor the two releases before)" >&2
+        exit 1
+    fi
+    [[ "$nv_fedora" != "$fedora" ]] && echo "NVIDIA's repo has no driver for Fedora $fedora yet: using the Fedora $nv_fedora one"
+    # Drop NVIDIA repos for other Fedora versions (e.g. this release's one, added by an earlier
+    # run before it had the driver), so only one of them is active
+    for f in /etc/yum.repos.d/cuda-fedora*.repo; do
+        [[ -e "$f" && "$f" != */cuda-fedora$nv_fedora.repo ]] && sudo rm "$f"
+    done
+    if ! has_repo "cuda-fedora$nv_fedora-x86_64"; then
+        sudo dnf config-manager addrepo --from-repofile="$nv_base/fedora$nv_fedora/x86_64/cuda-fedora$nv_fedora.repo"
     fi
     # RPM Fusion nonfree has its own NVIDIA packages, which would clash with NVIDIA's
     rpmfusion_exclude_nvidia
@@ -225,12 +248,16 @@ if [[ -n "$nvidia_gpu" ]] && ! modinfo nvidia >/dev/null 2>&1; then
     # hardware video decoding through VA-API; mokutil checks Secure Boot
     sudo dnf install -y kernel-devel-matched kernel-headers nvidia-open \
         nvidia-driver-libs.i686 nvidia-driver-cuda-libs.i686 libva-nvidia-driver mokutil
-    # DKMS builds the module while installing; build it again if it isn't there
-    if ! modinfo nvidia >/dev/null 2>&1; then
-        sudo dkms autoinstall -k "$(uname -r)" || true
+    # DKMS builds the module while installing; build it again if it isn't there. Checked for the
+    # newest installed kernel, the one the next boot uses: kernel-devel-matched pulls in a newer
+    # kernel than the running one when there is an update, and DKMS builds only for kernels
+    # whose headers are installed.
+    kver="$(rpm -q --qf '%{VERSION}-%{RELEASE}.%{ARCH}\n' kernel-core | sort -V | tail -1)"
+    if ! modinfo -k "$kver" nvidia >/dev/null 2>&1; then
+        sudo dkms autoinstall -k "$kver" || true
     fi
-    if ! modinfo nvidia >/dev/null 2>&1; then
-        echo "The NVIDIA kernel module was not built for $(uname -r); see: sudo dkms status" >&2
+    if ! modinfo -k "$kver" nvidia >/dev/null 2>&1; then
+        echo "The NVIDIA kernel module was not built for $kver; see: sudo dkms status" >&2
         exit 1
     fi
     # Secure Boot: DKMS signs the module with its own key, which the firmware must trust.
@@ -241,7 +268,7 @@ if [[ -n "$nvidia_gpu" ]] && ! modinfo nvidia >/dev/null 2>&1; then
         sudo mokutil --import /var/lib/dkms/mok.pub
         echo "At the next reboot choose: Enroll MOK > Continue > Yes, and type that password" >&2
     fi
-    echo "NVIDIA driver $(modinfo -F version nvidia) installed; reboot to load it (nouveau is in use until then)"
+    echo "NVIDIA driver $(modinfo -k "$kver" -F version nvidia) installed for kernel $kver; reboot to load it (nouveau is in use until then)"
 fi
 
 # Bluetooth is not enabled on a minimal install

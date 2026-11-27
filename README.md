@@ -183,6 +183,16 @@ which works with no driver loaded and without `lspci`) and no NVIDIA kernel modu
 packages, with no third-party patches. Nobara ships its own driver (negativo17's packaging,
 with prebuilt modules), so there this is skipped.
 
+- Repo version: NVIDIA publishes a new Fedora's repo before putting the driver in it (at
+  first `fedora45` had only datacenter tools). `setup.sh` uses the newest repo, from this
+  Fedora down to two releases back, that has `nvidia-open` (`dnf repoquery` against it), and
+  removes the NVIDIA repos of other versions. On Fedora 45 that is the `fedora44` repo for
+  now: its packages install fine on 45 (checked with a dnf dry run), since DKMS builds the
+  module for the running Fedora's kernel. Once NVIDIA puts the driver in the `fedora45`
+  repo, switch to it: `sudo rm /etc/yum.repos.d/cuda-fedora44.repo`, then
+  `sudo dnf config-manager addrepo --from-repofile=https://developer.download.nvidia.com/compute/cuda/repos/fedora45/x86_64/cuda-fedora45.repo`
+  and `sudo dnf distro-sync 'nvidia*'`.
+
 - `nvidia-open`: the full driver with NVIDIA's open kernel module (what NVIDIA uses for
   Turing/RTX 20 and newer; older GPUs are not supported by this branch), built by DKMS for
   each kernel. It includes `nvidia-smi` (`nvidia-driver-cuda`) and `nvidia-settings`.
@@ -201,7 +211,9 @@ with prebuilt modules), so there this is skipped.
   Boot is on and the key isn't enrolled, `setup.sh` runs `mokutil --import` (asks for a
   one-time password) and at the next reboot you pick *Enroll MOK > Continue > Yes* on the
   blue screen and type it.
-- `setup.sh` checks that the module was built for the running kernel and stops if not
+- `setup.sh` checks that the module was built for the newest installed kernel, the one the
+  next boot uses (`kernel-devel-matched` pulls in a newer kernel than the running one when
+  there is an update, and DKMS only builds for kernels with headers), and stops if not
   (`sudo dkms status` shows why). Reboot afterwards: nouveau stays loaded until then.
 - `hyprland.lua` sets `LIBVA_DRIVER_NAME=nvidia` and `NVD_BACKEND=direct` when the `nvidia`
   module is loaded, for VA-API through `libva-nvidia-driver` (Hyprland wiki).
