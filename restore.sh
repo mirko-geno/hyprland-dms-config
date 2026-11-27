@@ -20,8 +20,9 @@ HYPR_COPR="lionheartp/Hyprland"
 HYPR_REPO_ID="copr:copr.fedorainfracloud.org:lionheartp:Hyprland"
 # Installed with weak deps (DMS recommends cava, qt6ct, qt6-qtmultimedia...).
 # breeze-icon-theme: breeze-dark is one of the fallbacks of the Sweet-Red icon theme.
+# lua-devel, make: to build the hyprexpo plugin (hyprexpo.sh).
 PACKAGES=(dms danksearch matugen dgop alacritty fish zoxide gcr gnome-keyring
-    breeze-icon-theme xdg-desktop-portal-gtk)
+    breeze-icon-theme xdg-desktop-portal-gtk lua-devel make)
 # Desktop basics that Fedora Workstation has and a minimal install doesn't:
 # graphics (Intel/AMD; NVIDIA needs RPM Fusion), audio (DMS volume uses PipeWire), battery and
 # power profiles, Wi-Fi and Bluetooth, fonts (DMS uses Fira Code as monospace), xdg tools
@@ -35,14 +36,21 @@ if [[ ! -e /etc/systemd/system/display-manager.service ]]; then
     PACKAGES+=(greetd dms-greeter)
     SETUP_GREETER=1
 fi
-# Installed without weak deps: they pull a bar, a launcher and kitty, which DMS already covers
-HYPR_PACKAGES=(hyprland xdg-desktop-portal-hyprland)
+# Installed without weak deps: they pull a bar, a launcher and kitty, which DMS already covers.
+# hyprland-guiutils: dialogs Hyprland runs (app not responding, permissions, update news);
+# without it Hyprland shows a warning on every login.
+# hyprland-devel: Hyprland headers (and compiler) to build the hyprexpo plugin.
+HYPR_PACKAGES=(hyprland xdg-desktop-portal-hyprland hyprland-guiutils hyprland-devel)
 
 # Packages: only the missing ones, so on an already set up system nothing is asked.
 # Checked by capability, so replacements count (e.g. mesa-vulkan-drivers-freeworld).
 missing() { for p in "$@"; do rpm -q --whatprovides "$p" >/dev/null 2>&1 || echo "$p"; done; }
 mapfile -t need < <(missing "${PACKAGES[@]}")
 mapfile -t need_hypr < <(missing "${HYPR_PACKAGES[@]}")
+# hyprland-devel must be the same version as an already installed hyprland
+if rpm -q hyprland >/dev/null 2>&1; then
+    need_hypr=("${need_hypr[@]/#hyprland-devel/hyprland-devel-$(rpm -q --qf '%{version}-%{release}' hyprland)}")
+fi
 if (( ${#need[@]} + ${#need_hypr[@]} )); then
     echo "Installing ${need[*]} ${need_hypr[*]} (needs sudo)"
     # dnf copr and dnf config-manager come from dnf5-plugins
@@ -51,6 +59,11 @@ if (( ${#need[@]} + ${#need_hypr[@]} )); then
     sudo dnf copr enable -y "$HYPR_COPR"
     # The Hyprland COPR also ships quickshell and matugen; keep the versions DMS depends on
     sudo dnf config-manager setopt "$HYPR_REPO_ID.excludepkgs=quickshell,matugen"
+    # Nobara's terra repo ships a newer glaze-devel that doesn't provide glaze-static, which
+    # hyprland-devel needs (from the Hyprland COPR); this adds to terra's own exclude list
+    if dnf -q repo info terra >/dev/null 2>&1; then
+        sudo dnf config-manager setopt "terra.excludepkgs=glaze-devel"
+    fi
     if (( ${#need[@]} )); then sudo dnf install -y "${need[@]}"; fi
     if (( ${#need_hypr[@]} )); then
         sudo dnf install -y --setopt=install_weak_deps=False "${need_hypr[@]}"
@@ -108,14 +121,19 @@ done
 mkdir -p "$CFG/hypr/dms"
 cp "$REPO/hypr/"*.lua "$CFG/hypr/"
 cp "$REPO/hypr/dms/"*.lua "$CFG/hypr/dms/"
+cp "$REPO/hypr/xdph.conf" "$CFG/hypr/"
 [[ -d "$REPO/hypr/scripts" ]] && cp -r "$REPO/hypr/scripts" "$CFG/hypr/"
+# Workspace overview plugin (Super+Tab); without it Super+Tab is the DMS overview
+"$REPO/hyprexpo.sh" || echo "hyprexpo was not built: Super+Tab stays the DMS overview" >&2
 
 # DMS: config, session state, and started with the Hyprland session (dms.service is a
-# systemd user service; `dms setup` normally adds this link)
+# systemd user service; `dms setup` normally adds this link). dsearch.service (from
+# danksearch) is the file index behind the "/" file search in DMS; its preset is disabled.
 mkdir -p "$CFG/dms" "$STATE/dms"
 cp -r "$REPO/dms/config/." "$CFG/dms/"
 cp "$REPO/dms/state/session.json" "$STATE/dms/"
 systemctl --user add-wants hyprland-session.target dms.service
+systemctl --user enable --now dsearch.service
 
 # Alacritty
 mkdir -p "$CFG/alacritty"

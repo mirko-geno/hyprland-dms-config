@@ -89,12 +89,21 @@
       "leftWidgets": [
         {
           "id": "launcherButton",
-          "enabled": true,
+          "enabled": false,
           "launcherLogoMode": "apps"
         },
         {
           "id": "workspaceSwitcher",
-          "enabled": false
+          "enabled": true,
+          "workspaceIndicatorStyle": "lines",
+          "workspaceIndicatorCompact": true,
+          "workspaceIndicatorRoundness": -1,
+          "showWorkspaceIndex": true,
+          "showWorkspaceName": false,
+          "showWorkspaceApps": false,
+          "showOccupiedWorkspacesOnly": false,
+          "showSpecialWorkspaces": false,
+          "workspaceFocusedBorderEnabled": false
         },
         {
           "id": "focusedWindow",
@@ -118,6 +127,158 @@
         {
           "id": "battery",
           "enabled": false
+        },
+        {
+          "id": "controlCenterButton",
+          "enabled": true
+        }
+      ],
+      "spacing": 4,
+      "innerPadding": 4,
+      "bottomGap": 0,
+      "transparency": 0.5,
+      "widgetTransparency": 1,
+      "squareCorners": false,
+      "noBackground": false,
+      "gothCornersEnabled": false,
+      "gothCornerRadiusOverride": false,
+      "gothCornerRadiusValue": 12,
+      "borderEnabled": false,
+      "borderColor": "surfaceText",
+      "borderOpacity": 1,
+      "borderThickness": 1,
+      "fontScale": 1,
+      "autoHide": false,
+      "autoHideDelay": 250,
+      "openOnOverview": false,
+      "visible": true,
+      "popupGapsAuto": true,
+      "popupGapsManual": 4,
+      "followInterfaceStyle": true,
+      "widgetFollowInterfaceStyle": true,
+      "hideOnLastDisplay": false,
+      "hoverPopouts": false,
+      "clickActionFollowMouse": false,
+      "dot": false,
+      "island": true,
+      "islandFloating": false,
+      "islandPlacement": "edge",
+      "islandNotch": true,
+      "islandAlongOffset": 0,
+      "islandReserveThickness": 40,
+      "islandOuterGap": 0,
+      "islandRouteLauncher": "follow",
+      "islandRouteControlCenter": "follow",
+      "islandRouteNotificationCenter": "follow",
+      "islandRouteClipboard": "follow",
+      "islandRoutePowerMenu": "follow",
+      "islandSharedRouting": "normal",
+      "islandNotificationPopups": false,
+      "islandSystemOsd": true,
+      "islandNotificationExpand": false,
+      "islandMediaClockVisible": true,
+      "islandRouteDash": "island",
+      "islandRouteMedia": "island",
+      "islandRouteWeather": "island",
+      "islandRouteWallpaper": "island",
+      "islandInteractionMode": "hybrid",
+      "islandHomeLayout": [
+        {
+          "id": "workspaces",
+          "enabled": false
+        },
+        {
+          "id": "media",
+          "enabled": true
+        },
+        {
+          "id": "clock",
+          "enabled": true
+        },
+        {
+          "id": "weather",
+          "enabled": false
+        },
+        {
+          "id": "status",
+          "enabled": false
+        },
+        {
+          "id": "volume",
+          "enabled": false
+        },
+        {
+          "id": "brightness",
+          "enabled": false
+        },
+        {
+          "id": "notifications",
+          "enabled": true
+        },
+        {
+          "id": "privacy",
+          "enabled": true
+        },
+        {
+          "id": "tray",
+          "enabled": false
+        }
+      ],
+      "widgetPadding": 8,
+      "islandCompactThickness": 38,
+      "islandSatelliteGap": 12
+    },
+    {
+      "id": "bar1794935632100",
+      "name": "Laptop Bar",
+      "enabled": true,
+      "position": 0,
+      "screenPreferences": [
+        "eDP-1",
+        "eDP-2"
+      ],
+      "showOnLastDisplay": false,
+      "leftWidgets": [
+        {
+          "id": "launcherButton",
+          "enabled": false,
+          "launcherLogoMode": "apps"
+        },
+        {
+          "id": "workspaceSwitcher",
+          "enabled": true,
+          "workspaceIndicatorStyle": "lines",
+          "workspaceIndicatorCompact": true,
+          "workspaceIndicatorRoundness": -1,
+          "showWorkspaceIndex": true,
+          "showWorkspaceName": false,
+          "showWorkspaceApps": false,
+          "showOccupiedWorkspacesOnly": false,
+          "showSpecialWorkspaces": false,
+          "workspaceFocusedBorderEnabled": false
+        },
+        {
+          "id": "focusedWindow",
+          "enabled": false
+        }
+      ],
+      "centerWidgets": [
+        "music",
+        "clock",
+        "weather"
+      ],
+      "rightWidgets": [
+        "systemTray",
+        "clipboard",
+        "cpuUsage",
+        "memUsage",
+        {
+          "id": "notificationButton",
+          "enabled": false
+        },
+        {
+          "id": "battery",
+          "enabled": true
         },
         {
           "id": "controlCenterButton",
