@@ -151,10 +151,18 @@ fi
 
 # Profile picture: set through AccountsService (what DMS and the DMS greeter read; changing
 # your own picture needs no password). accounts-daemon copies it into its icons folder.
+# DMS reads the picture only when it starts, so a running DMS shows the new one after a restart.
 if [[ -f "$REPO/profile/avatar" ]]; then
-    busctl call org.freedesktop.Accounts "/org/freedesktop/Accounts/User$(id -u)" \
-        org.freedesktop.Accounts.User SetIconFile s "$REPO/profile/avatar" ||
-        echo "Could not set the profile picture" >&2
+    user_obj="/org/freedesktop/Accounts/User$(id -u)"
+    busctl call org.freedesktop.Accounts "$user_obj" org.freedesktop.Accounts.User \
+        SetIconFile s "$REPO/profile/avatar" || true
+    icon="$(busctl get-property org.freedesktop.Accounts "$user_obj" \
+        org.freedesktop.Accounts.User IconFile 2>/dev/null | sed -n 's/^s "\(.*\)"$/\1/p')"
+    if [[ -n "$icon" ]] && cmp -s "$icon" "$REPO/profile/avatar"; then
+        echo "Profile picture set ($icon); restart DMS (dms restart) if it is running to see it"
+    else
+        echo "Could not set the profile picture (AccountsService has: ${icon:-none})" >&2
+    fi
 fi
 
 # Wallpapers: each one session.json uses (general, light/dark, per monitor) is copied from
