@@ -61,12 +61,20 @@ if [[ -d "$CLAUDE_PROJECT" ]]; then
     [[ -d "$CLAUDE_PROJECT/memory" ]] && cp -r "$CLAUDE_PROJECT/memory" "$REPO/claude/"
 fi
 
-# Current wallpaper (only the one in use, not the whole folder; other files in wallpaper/ are kept)
-wp="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("wallpaperPath",""))' "$STATE/dms/session.json")"
-if [[ -n "$wp" && -f "$wp" ]]; then
+# Wallpapers in use (the general one, light/dark and each monitor's; not the whole folder;
+# other files in wallpaper/ are kept)
+while IFS= read -r wp; do
+    [[ -f "$wp" ]] || continue
     mkdir -p "$REPO/wallpaper"
     cp "$wp" "$REPO/wallpaper/"
     echo "Wallpaper: $wp"
-fi
+done < <(python3 - "$STATE/dms/session.json" <<'PY'
+import json, sys
+d = json.load(open(sys.argv[1]))
+paths = [d.get(k, "") for k in ("wallpaperPath", "wallpaperPathLight", "wallpaperPathDark")]
+paths += (d.get("monitorWallpapers") or {}).values()
+print("\n".join(dict.fromkeys(p for p in paths if p and not p.startswith("#"))))
+PY
+)
 
 echo "Done."
