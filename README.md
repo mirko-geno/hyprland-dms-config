@@ -36,6 +36,7 @@ claude/
 ├── *.jsonl         # Claude Code session(s) used to build this setup
 └── memory/         # Claude Code memory for this project
 wallpaper/          # the wallpapers in use (general, light/dark and per monitor)
+profile/avatar      # profile picture (AccountsService), shown by DMS and the DMS greeter
 ```
 
 ## Backup and restore
@@ -59,6 +60,9 @@ dms restart
   3. Backs up your current system config to `~/.config-backups/<date>/`.
   4. Copies everything, installs `fish`/`zoxide` if missing and makes fish the default shell.
 - Hyprland reloads its config on save (or `hyprctl reload`); DMS needs `dms restart`.
+- Profile picture: `backup.sh` saves the AccountsService icon (the one DMS and the DMS greeter
+  show) to `profile/avatar`; `restore.sh` sets it back with AccountsService's `SetIconFile`
+  over D-Bus (no password needed for your own picture).
 - Only the wallpapers in use are saved (the general one, light/dark and each monitor's from
   `session.json`), not the whole `~/.wallpapers` folder. On restore, each is copied to its
   original path if it is missing. Per monitor: DP-1 and HDMI-A-1 have their own; the laptop
