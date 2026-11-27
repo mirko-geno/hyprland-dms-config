@@ -330,6 +330,11 @@ passphrase is asked once per session in a popup.
 
 - `systemctl --user enable --now gcr-ssh-agent.socket` (done by `restore.sh`).
 - `~/.config/environment.d/90-ssh-agent.conf` sets `SSH_AUTH_SOCK=${XDG_RUNTIME_DIR}/gcr/ssh`.
+- `hyprland.lua` sets `SSH_AUTH_SOCK` too (`hl.env`): only display managers that import the
+  systemd environment (GDM) pass `environment.d` to the session; greetd (the DMS greeter)
+  doesn't, and without the variable `ssh` wouldn't use the agent.
+- The agent unlocks keys with the login keyring, which PAM unlocks at login with your password
+  (`pam_gnome_keyring` in GDM's and greetd's PAM files).
 
 ## Claude Code session
 

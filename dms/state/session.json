@@ -32,6 +32,8 @@
       }
     }
   },
+  "doNotDisturb": true,
+  "doNotDisturbHeldByScreenShare": true,
   "repoMoveNoticeVersion": "v2.1.2",
   "wallpaperPathLight": "/home/mirko/.wallpapers/Honda NSX Type S (18).jpg",
   "wallpaperPathDark": "/home/mirko/.wallpapers/Honda NSX Type S (18).jpg",
@@ -75,7 +77,7 @@
   "enabledGpuPciIds": [
     "10de:1e89"
   ],
-  "lastPlayerIdentity": "Spotify",
+  "lastPlayerIdentity": "Mozilla zen",
   "niriOutputSettings": {
     "DP-1": {}
   },
@@ -91,23 +93,29 @@
     "niri": {}
   },
   "lastAppliedIconTheme": "Sweet-Red",
+  "launcherLastQuery": "files",
   "launcherQueryHistory": [
+    "files",
+    "dux fi",
+    "disks",
+    "zen",
+    "obs",
+    "/OIP mapa",
+    "zap",
+    "za",
+    "zb",
+    "t",
     "box",
     "edit",
     "o",
-    "disks",
     "k",
     "dis",
-    "zap",
-    "files",
-    "zen",
     "spotif",
     "sdfa",
     "nobra",
     "nobara",
     "dms",
     "update",
-    "obs",
     "vesk",
     "z",
     "wha",
@@ -136,12 +144,7 @@
     "versk",
     "pdf",
     "fil",
-    "vsco",
-    "missi",
-    "flat",
-    "bo",
-    "boxes",
-    "vis"
+    "vsco"
   ],
   "niriOverviewLastMode": "all",
   "configVersion": 7
