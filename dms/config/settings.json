@@ -226,7 +226,8 @@
       ],
       "widgetPadding": 8,
       "islandCompactThickness": 38,
-      "islandSatelliteGap": 12
+      "islandSatelliteGap": 12,
+      "islandDashTabs": false
     },
     {
       "id": "bar1794935632100",
@@ -805,5 +806,6 @@
   "lockScreenFontFamily": "",
   "lockScreenVideoEnabled": false,
   "lockPamExternallyManaged": true,
-  "density": "comfortable"
+  "density": "comfortable",
+  "dashOptions": {}
 }

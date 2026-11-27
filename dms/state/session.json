@@ -72,6 +72,9 @@
   "recentColors": [
     "#ff0005"
   ],
+  "enabledGpuPciIds": [
+    "10de:1e89"
+  ],
   "lastPlayerIdentity": "Spotify",
   "niriOutputSettings": {
     "DP-1": {}
@@ -88,8 +91,9 @@
     "niri": {}
   },
   "lastAppliedIconTheme": "Sweet-Red",
-  "launcherLastQuery": "o",
   "launcherQueryHistory": [
+    "box",
+    "edit",
     "o",
     "disks",
     "k",
@@ -136,10 +140,8 @@
     "missi",
     "flat",
     "bo",
-    "box",
     "boxes",
-    "vis",
-    "fas"
+    "vis"
   ],
   "niriOverviewLastMode": "all",
   "configVersion": 7

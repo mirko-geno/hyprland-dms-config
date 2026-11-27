@@ -2,3 +2,4 @@
 - [Hyprland + DMS setup](hyprland-dms-setup.md) — ~/hyprland-dms-config repo, Hyprland from COPR, shared files with niri repo
 - [Workflow goal (important)](workflow-goal.md) — pure tiling, no scrolling; workspaces as virtual monitors; no mouse resizing
 - [Always push sessions](push-sessions.md) — run ./backup.sh and commit claude/ sessions+memory with every commit
+- [Repos and distro differences](repos-and-distro-differences.md) — always say which repo a package needs; desktop is Nobara (terra), notebook target is plain Fedora minimal
