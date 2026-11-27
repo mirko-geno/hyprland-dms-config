@@ -25,8 +25,10 @@ PACKAGES=(dms danksearch matugen dgop alacritty fish zoxide gcr gnome-keyring
     breeze-icon-theme xdg-desktop-portal-gtk lua-devel make)
 # Desktop basics that Fedora Workstation has and a minimal install doesn't:
 # graphics (Intel/AMD; NVIDIA needs RPM Fusion), audio (DMS volume uses PipeWire), battery and
-# power profiles, Wi-Fi and Bluetooth, fonts (DMS uses Fira Code as monospace), xdg tools
-PACKAGES+=(mesa-dri-drivers mesa-vulkan-drivers pipewire pipewire-pulseaudio wireplumber
+# power profiles, Wi-Fi and Bluetooth, fonts (DMS uses Fira Code as monospace), xdg tools,
+# python3 (reads session.json below) and git (hyprexpo.sh clones the plugin)
+PACKAGES+=(python3 git-core mesa-dri-drivers mesa-vulkan-drivers
+    pipewire pipewire-pulseaudio wireplumber
     upower power-profiles-daemon NetworkManager-wifi bluez polkit xdg-utils xdg-user-dirs
     google-noto-sans-vf-fonts google-noto-sans-mono-vf-fonts google-noto-color-emoji-fonts
     fira-code-fonts)
