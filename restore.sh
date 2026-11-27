@@ -28,9 +28,9 @@ PACKAGES=(dms dux-search matugen dux-gop alacritty fish zoxide gcr gnome-keyring
 # hyprland-devel: Hyprland headers (and compiler) to build the hyprexpo plugin.
 HYPR_PACKAGES=(hyprland xdg-desktop-portal-hyprland hyprland-guiutils hyprland-devel)
 
-# Packages: only the missing ones, so on an already set up system nothing is asked
 # Whether a repo is configured (enabled or not); `dnf repo info` exits 0 even for unknown repos
 has_repo() { dnf -q repo list --all 2>/dev/null | awk '{print $1}' | grep -qx "$1"; }
+# Packages: only the missing ones, so on an already set up system nothing is asked
 missing() { for p in "$@"; do rpm -q "$p" >/dev/null 2>&1 || echo "$p"; done; }
 mapfile -t need < <(missing "${PACKAGES[@]}")
 mapfile -t need_hypr < <(missing "${HYPR_PACKAGES[@]}")
