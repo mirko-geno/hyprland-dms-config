@@ -106,7 +106,7 @@ set up it does not ask for sudo:
 | [`duxlabs/dux-repo`](https://copr.fedorainfracloud.org/coprs/duxlabs/dux-repo/) COPR | `dux-edit` (text editor, `dedit`) |
 | Flathub | Zen Browser (`app.zen_browser.zen`, system-wide), set as the default browser with `xdg-mime` |
 | [RPM Fusion](https://rpmfusion.org) free and nonfree (only if the GPU is AMD or Intel) | Hardware video decoding with the patented codecs Fedora leaves out: `mesa-va-drivers-freeworld` (AMD, swapped for Fedora's `mesa-va-drivers`), `intel-media-driver` (Intel, replaces Fedora's `libva-intel-media-driver`). The GPU vendor is read from `/sys/class/drm/card*/device/vendor`; check it with `vainfo` |
-| Fedora: desktop basics a minimal install lacks | graphics `mesa-dri-drivers`, `mesa-vulkan-drivers`; audio `pipewire`, `pipewire-pulseaudio`, `wireplumber`; battery/power `upower`, `power-profiles-daemon`; `NetworkManager-wifi`, `bluez`; `polkit`, `xdg-utils`, `xdg-user-dirs`; `python3`, `git-core` (used by `restore.sh` and `hyprexpo.sh`), `libva-utils` (`vainfo`); fonts `google-noto-sans-vf-fonts`, `google-noto-sans-mono-vf-fonts`, `google-noto-color-emoji-fonts`, `fira-code-fonts` (DMS monospace font); `greetd` and `acl` (minimal install only) |
+| Fedora: desktop basics a minimal install lacks | graphics `mesa-dri-drivers`, `mesa-vulkan-drivers`; audio `pipewire`, `pipewire-pulseaudio`, `wireplumber`; battery/power `upower`, `power-profiles-daemon`; `NetworkManager-wifi`, `bluez`; `polkit`, `xdg-utils`, `xdg-user-dirs`; `python3`, `git-core` (used by `restore.sh` and `hyprexpo.sh`), `libva-utils` (`vainfo`); fonts `google-noto-sans-vf-fonts`, `google-noto-sans-mono-vf-fonts`, `google-noto-color-emoji-fonts`, `fira-code-fonts` (DMS monospace font); `greetd` (minimal install only) |
 
 - DMS comes from the Dux Labs COPRs. The older `avengemedia/dms` and `avengemedia/danklinux`
   COPRs are deprecated; `dms migrate dux` moves an existing install (only the repos change:
@@ -128,12 +128,14 @@ set up it does not ask for sudo:
   enables `dsearch.service`; without it the search returns nothing. The first index takes a
   while after login.
 - Bluetooth (`bluetooth.service`) is enabled if it isn't.
-- Login screen (only when `/etc/systemd/system/display-manager.service` does not exist):
-  `restore.sh` writes `/etc/greetd/config.toml` (user `greeter`, command
-  `/usr/bin/dms-greeter --command hyprland`), enables `greetd.service`, sets
-  `graphical.target` as default, adds the user to the `greeter` group (`dms-greeter sync`
-  refuses to run otherwise) and runs `dms-greeter sync` (through `sg greeter`, since the new
-  group isn't active yet) to copy the DMS theme and wallpaper to it. Fedora's `/etc/pam.d/greetd` already unlocks gnome-keyring at login.
+- Login screen (only when `/etc/systemd/system/display-manager.service` does not exist), the
+  very last step, so it only happens once everything else succeeded: `restore.sh` adds the
+  user to the `greeter` group (`dms-greeter sync` refuses to run otherwise), runs
+  `dms-greeter sync` (through `sg greeter`, since the new group isn't active yet) to copy the
+  DMS theme and wallpaper to the greeter, sets `graphical.target` as default and runs
+  `dms-greeter enable`, which writes the greetd config, PAM and SELinux bits and enables (and
+  starts) greetd. Fedora's `/etc/pam.d/greetd` already unlocks gnome-keyring at login.
+  Check it with `dms-greeter status`.
 - NVIDIA GPUs need the proprietary driver from RPM Fusion, which is not handled here
   (Intel/AMD work with Mesa).
 - Apart from the apps listed above, apps (browser, editor...) are not installed by `restore.sh`.

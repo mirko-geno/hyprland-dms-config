@@ -58,8 +58,7 @@ PACKAGES+=(python3 git-core libva-utils mesa-dri-drivers mesa-vulkan-drivers
 # Login screen, only when there is no display manager yet (a minimal install has none;
 # on Workstation GDM is kept): greetd with the DMS greeter
 if [[ ! -e /etc/systemd/system/display-manager.service ]]; then
-    # acl: dms-greeter sync gives the greeter read access to the DMS config with setfacl
-    PACKAGES+=(greetd dux-greeter acl)
+    PACKAGES+=(greetd dux-greeter)
     SETUP_GREETER=1
 fi
 # Installed without weak deps: they pull a bar, a launcher and kitty, which DMS already covers.
@@ -159,25 +158,6 @@ fi
 if ! systemctl is-enabled -q bluetooth.service 2>/dev/null; then
     echo "Enabling Bluetooth (needs sudo)"
     sudo systemctl enable bluetooth.service
-fi
-
-# Login screen (minimal install): greetd runs the DMS greeter on Hyprland, and the system
-# boots to the graphical target. greetd's Fedora PAM file already unlocks gnome-keyring.
-if [[ -n "${SETUP_GREETER:-}" ]]; then
-    echo "Setting up greetd + dms-greeter as the login screen (needs sudo)"
-    sudo tee /etc/greetd/config.toml >/dev/null <<'EOF'
-# Written by hyprland-dms-config/restore.sh: DMS greeter on Hyprland
-[terminal]
-vt = 1
-
-[default_session]
-user = "greeter"
-command = "/usr/bin/dms-greeter --command hyprland"
-EOF
-    sudo systemctl enable greetd.service
-    sudo systemctl set-default graphical.target
-    # dms-greeter sync refuses to run unless the user is in the greeter group
-    id -nG | grep -qw greeter || sudo usermod -aG greeter "$(id -un)"
 fi
 
 # Validate the Hyprland config before touching anything
@@ -283,12 +263,18 @@ for app in org.gnome.Loupe org.gnome.Papers org.gnome.Decibels org.gnome.Showtim
     (( ${#types[@]} )) && xdg-mime default "$app.desktop" "${types[@]}"
 done
 
-# Copy the DMS theme, wallpaper and settings to the login screen (after DMS config is restored)
+echo "Done. Hyprland reloads its config on its own (or run: hyprctl reload); for DMS: dms restart"
+
+# Login screen (minimal install). Last, once everything else succeeded (set -e stops the script
+# on any error before this), because `dms-greeter enable` starts greetd right away.
+# sync copies the DMS theme, wallpaper and settings to the greeter; it refuses to run unless
+# the user is in the greeter group, which is new in this login, hence sg. enable writes the
+# greetd config, PAM and SELinux bits and enables greetd (it asks for sudo itself).
 if [[ -n "${SETUP_GREETER:-}" ]]; then
-    # sg: the greeter group was just added and is not active in this login yet
+    echo "Setting up the DMS greeter as the login screen (reboot afterwards if it doesn't show up)"
+    id -nG | grep -qw greeter || sudo usermod -aG greeter "$(id -un)"
     sg greeter -c "dms-greeter sync" ||
         echo "dms-greeter sync failed; run it again after logging in to Hyprland" >&2
+    sudo systemctl set-default graphical.target
+    dms-greeter enable
 fi
-
-echo "Done. Hyprland reloads its config on its own (or run: hyprctl reload); for DMS: dms restart"
-if [[ -n "${SETUP_GREETER:-}" ]]; then echo "Reboot to get the DMS login screen."; fi
