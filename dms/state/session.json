@@ -1,9 +1,9 @@
 {
-  "wallpaperPath": "/home/mirko/.wallpapers/Honda NSX Type S (18).jpg",
+  "wallpaperPath": "@HOME@/.wallpapers/Honda NSX Type S (18).jpg",
   "perMonitorWallpaper": true,
   "monitorWallpapers": {
-    "DP-1": "/home/mirko/.wallpapers/Honda NSX Type S.jpg",
-    "HDMI-A-1": "/home/mirko/.wallpapers/Honda NSX Type S (2).jpg"
+    "DP-1": "@HOME@/.wallpapers/Honda NSX Type S.jpg",
+    "HDMI-A-1": "@HOME@/.wallpapers/Honda NSX Type S (2).jpg"
   },
   "monitorWallpaperFillModes": {
     "HDMI-A-1": "Fill"
@@ -35,8 +35,8 @@
   "doNotDisturb": true,
   "doNotDisturbHeldByScreenShare": true,
   "repoMoveNoticeVersion": "v2.1.2",
-  "wallpaperPathLight": "/home/mirko/.wallpapers/Honda NSX Type S (18).jpg",
-  "wallpaperPathDark": "/home/mirko/.wallpapers/Honda NSX Type S (18).jpg",
+  "wallpaperPathLight": "@HOME@/.wallpapers/Honda NSX Type S (18).jpg",
+  "wallpaperPathDark": "@HOME@/.wallpapers/Honda NSX Type S (18).jpg",
   "monitorCyclingSettings": {
     "DP-1": {
       "enabled": false,

@@ -94,6 +94,13 @@ rpmfusion_exclude_nvidia() {
         if has_repo "$r"; then sudo dnf config-manager setopt "$r.excludepkgs=*nvidia*"; fi
     done
 }
+# DMS and fish save absolute paths (wallpapers, theme file, fish_user_paths); backup.sh stores
+# the home folder in them as @HOME@, which is replaced here by this user's home.
+fill_home() {
+    grep -rlIF '@HOME@' "$@" 2>/dev/null | while IFS= read -r f; do
+        sed -i "s|@HOME@|$HOME|g" "$f"
+    done
+}
 # Packages: only the missing ones, so on an already set up system nothing is asked.
 # Checked by capability, so replacements count (e.g. mesa-vulkan-drivers-freeworld).
 missing() { for p in "$@"; do rpm -q --whatprovides "$p" >/dev/null 2>&1 || echo "$p"; done; }
@@ -283,6 +290,7 @@ cp "$REPO/hypr/xdph.conf" "$CFG/hypr/"
 mkdir -p "$CFG/dms" "$STATE/dms"
 cp -r "$REPO/dms/config/." "$CFG/dms/"
 cp "$REPO/dms/state/session.json" "$STATE/dms/"
+fill_home "$CFG/dms" "$STATE/dms/session.json"
 systemctl --user add-wants hyprland-session.target dms.service
 systemctl --user enable --now dsearch.service
 # Icon theme: DMS applies it through gsettings, and at startup it compares gsettings with the
@@ -300,6 +308,7 @@ cp "$REPO/alacritty/"*.toml "$CFG/alacritty/"
 # fish (installed above, with zoxide used by config.fish): copy the config, make it the default shell
 mkdir -p "$CFG/fish"
 cp -r "$REPO/fish/." "$CFG/fish/"
+fill_home "$CFG/fish"
 fish_path="$(command -v fish)"
 if [[ "$(getent passwd "$(id -un)" | cut -d: -f7)" != "$fish_path" ]]; then
     echo "Setting fish as the default shell (asks for your password)"

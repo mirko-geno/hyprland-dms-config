@@ -92,4 +92,10 @@ print("\n".join(dict.fromkeys(p for p in paths if p and not p.startswith("#"))))
 PY
 )
 
+# No user name in the repo: DMS and fish save absolute paths, so the home folder is stored as
+# @HOME@ (setup.sh puts the user's home back)
+grep -rlIF "$HOME/" "$REPO/dms" "$REPO/fish" 2>/dev/null | while IFS= read -r f; do
+    sed -i "s|$HOME/|@HOME@/|g" "$f"
+done
+
 echo "Done."

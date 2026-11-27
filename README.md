@@ -53,6 +53,9 @@ dms restart
 ```
 
 - `backup.sh` replaces whatever is in this folder with the current system config.
+- No user name is stored: DMS and fish save absolute paths (wallpapers, theme file,
+  `fish_user_paths`), so `backup.sh` writes the home folder in them as `@HOME@` and
+  `setup.sh` replaces it with the home of whoever runs it. Any user name works.
   Only `*.lua` files are copied from `~/.config/hypr` (leftovers like `hyprland.lua.orig`
   are skipped).
 - `setup.sh`:

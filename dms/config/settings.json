@@ -602,7 +602,7 @@
   "matugenSeedColor": "",
   "matugenContrast": 0,
   "matugenSpec": "dms",
-  "customThemeFile": "/home/mirko/.config/dms/themes/umbrellaCorporation/theme.json",
+  "customThemeFile": "@HOME@/.config/dms/themes/umbrellaCorporation/theme.json",
   "avatarRing": "none",
   "niriLayoutGapsOverride": 0,
   "niriLayoutRadiusOverride": 0,
