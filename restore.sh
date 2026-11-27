@@ -35,7 +35,8 @@ PACKAGES+=(python3 git-core mesa-dri-drivers mesa-vulkan-drivers
 # Login screen, only when there is no display manager yet (a minimal install has none;
 # on Workstation GDM is kept): greetd with the DMS greeter
 if [[ ! -e /etc/systemd/system/display-manager.service ]]; then
-    PACKAGES+=(greetd dms-greeter)
+    # acl: dms-greeter sync gives the greeter read access to the DMS config with setfacl
+    PACKAGES+=(greetd dms-greeter acl)
     SETUP_GREETER=1
 fi
 # Installed without weak deps: they pull a bar, a launcher and kitty, which DMS already covers.
@@ -93,6 +94,8 @@ command = "/usr/bin/dms-greeter --command hyprland"
 EOF
     sudo systemctl enable greetd.service
     sudo systemctl set-default graphical.target
+    # dms-greeter sync refuses to run unless the user is in the greeter group
+    id -nG | grep -qw greeter || sudo usermod -aG greeter "$(id -un)"
 fi
 
 # Validate the Hyprland config before touching anything
@@ -185,7 +188,9 @@ xdg-user-dirs-update
 
 # Copy the DMS theme, wallpaper and settings to the login screen (after DMS config is restored)
 if [[ -n "${SETUP_GREETER:-}" ]]; then
-    dms-greeter sync || echo "dms-greeter sync failed; run it again after logging in to Hyprland"
+    # sg: the greeter group was just added and is not active in this login yet
+    sg greeter -c "dms-greeter sync" ||
+        echo "dms-greeter sync failed; run it again after logging in to Hyprland" >&2
 fi
 
 echo "Done. Hyprland reloads its config on its own (or run: hyprctl reload); for DMS: dms restart"
